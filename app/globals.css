@@ -1,0 +1,376 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Complete theme token system for light and dark modes */
+:root {
+  /* Core backgrounds */
+  --background: oklch(0.98 0 0);
+  --foreground: oklch(0.15 0 0);
+
+  /* Card/panel surfaces */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0 0);
+
+  /* Popover/tooltip surfaces */
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0 0);
+
+  /* Primary actions */
+  --primary: oklch(0.45 0.15 160);
+  --primary-foreground: oklch(0.98 0 0);
+
+  /* Secondary elements */
+  --secondary: oklch(0.96 0 0);
+  --secondary-foreground: oklch(0.2 0 0);
+
+  /* Muted/subtle elements */
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+
+  /* Accent highlights */
+  --accent: oklch(0.96 0 0);
+  --accent-foreground: oklch(0.2 0 0);
+
+  /* Destructive actions */
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+
+  /* Borders and inputs */
+  --border: oklch(0.88 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.45 0.15 160);
+
+  /* Chart colors */
+  --chart-1: oklch(0.65 0.22 40);
+  --chart-2: oklch(0.6 0.12 185);
+  --chart-3: oklch(0.4 0.07 227);
+  --chart-4: oklch(0.83 0.19 85);
+  --chart-5: oklch(0.77 0.19 70);
+
+  /* Border radius */
+  --radius: 0.625rem;
+
+  /* Sidebar */
+  --sidebar: oklch(0.98 0 0);
+  --sidebar-foreground: oklch(0.15 0 0);
+  --sidebar-primary: oklch(0.45 0.15 160);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.96 0 0);
+  --sidebar-accent-foreground: oklch(0.2 0 0);
+  --sidebar-border: oklch(0.92 0 0);
+  --sidebar-ring: oklch(0.45 0.15 160);
+
+  /* Calendar-specific tokens - Light mode */
+  --calendar-bg: oklch(0.99 0 0);
+  --calendar-cell-bg: oklch(1 0 0);
+  --calendar-header-bg: oklch(0.93 0.03 160);
+  --calendar-header-text: oklch(0.2 0 0);
+  --calendar-month-bg: oklch(0.96 0.02 160);
+  --calendar-grid-line: oklch(0.88 0 0);
+  --calendar-weekend-bg: oklch(0.9 0 0);
+  --calendar-weekend-text: oklch(0.4 0 0);
+
+  /* Invalid date styling - Light mode */
+  --invalid-bg-1: oklch(0.88 0.08 25);
+  --invalid-bg-2: oklch(0.92 0.05 25);
+  --invalid-cross: oklch(0.55 0.22 25);
+
+  /* Tooltip styling - Light mode */
+  --tooltip-bg: oklch(1 0 0);
+  --tooltip-text: oklch(0.15 0 0);
+  --tooltip-border: oklch(0.88 0 0);
+  --tooltip-shadow: 0 4px 12px oklch(0.2 0 0 / 0.12);
+
+  /* Add detail panel tokens for light mode */
+  --panel-bg: oklch(0.99 0 0);
+  --panel-header-bg: oklch(0.95 0.03 160);
+  --panel-text: oklch(0.15 0 0);
+  --panel-text-muted: oklch(0.45 0 0);
+  --panel-border: oklch(0.88 0 0);
+  --panel-divider: oklch(0.9 0 0);
+  --panel-item-bg: oklch(0.97 0 0);
+  --panel-badge-bg: oklch(0.93 0 0);
+  --panel-badge-text: oklch(0.35 0 0);
+  --panel-weekend-badge-bg: oklch(0.92 0.02 220);
+  --panel-weekend-badge-text: oklch(0.35 0.05 220);
+  --panel-halfday-bg: oklch(0.95 0.08 85);
+  --panel-halfday-text: oklch(0.4 0.1 85);
+  --panel-close-hover: oklch(0.93 0 0);
+  --panel-accent-dot: oklch(0.55 0.18 160);
+
+  /* Add CSS variables for marker sizes */
+  --marker-size-workday: 26px;
+  --marker-size-weekend: 10px;
+}
+
+/* Dark mode with carefully tuned low-luminance palette */
+.dark {
+  /* Core backgrounds - softer than pure black */
+  --background: oklch(0.16 0 0);
+  --foreground: oklch(0.92 0 0);
+
+  /* Card/panel surfaces - subtle elevation */
+  --card: oklch(0.19 0 0);
+  --card-foreground: oklch(0.92 0 0);
+
+  /* Popover/tooltip surfaces */
+  --popover: oklch(0.22 0 0);
+  --popover-foreground: oklch(0.92 0 0);
+
+  /* Primary actions - emerald for brand consistency */
+  --primary: oklch(0.65 0.18 160);
+  --primary-foreground: oklch(0.15 0 0);
+
+  /* Secondary elements */
+  --secondary: oklch(0.24 0 0);
+  --secondary-foreground: oklch(0.92 0 0);
+
+  /* Muted/subtle elements */
+  --muted: oklch(0.24 0 0);
+  --muted-foreground: oklch(0.65 0 0);
+
+  /* Accent highlights */
+  --accent: oklch(0.24 0 0);
+  --accent-foreground: oklch(0.92 0 0);
+
+  /* Destructive actions */
+  --destructive: oklch(0.5 0.18 25);
+  --destructive-foreground: oklch(0.92 0 0);
+
+  /* Borders and inputs - subtle but visible */
+  --border: oklch(0.3 0 0);
+  --input: oklch(0.26 0 0);
+  --ring: oklch(0.65 0.18 160);
+
+  /* Chart colors - adjusted for dark backgrounds */
+  --chart-1: oklch(0.65 0.2 265);
+  --chart-2: oklch(0.7 0.17 162);
+  --chart-3: oklch(0.77 0.19 70);
+  --chart-4: oklch(0.63 0.27 304);
+  --chart-5: oklch(0.65 0.25 16);
+
+  /* Sidebar */
+  --sidebar: oklch(0.18 0 0);
+  --sidebar-foreground: oklch(0.92 0 0);
+  --sidebar-primary: oklch(0.65 0.18 160);
+  --sidebar-primary-foreground: oklch(0.15 0 0);
+  --sidebar-accent: oklch(0.26 0 0);
+  --sidebar-accent-foreground: oklch(0.92 0 0);
+  --sidebar-border: oklch(0.26 0 0);
+  --sidebar-ring: oklch(0.65 0.18 160);
+
+  /* Calendar-specific tokens - Dark mode */
+  --calendar-bg: oklch(0.17 0 0);
+  --calendar-cell-bg: oklch(0.19 0 0);
+  --calendar-header-bg: oklch(0.22 0.02 160);
+  --calendar-header-text: oklch(0.92 0 0);
+  --calendar-month-bg: oklch(0.2 0.01 160);
+  --calendar-grid-line: oklch(0.28 0 0);
+  --calendar-weekend-bg: oklch(0.26 0 0);
+  --calendar-weekend-text: oklch(0.65 0 0);
+
+  /* Invalid date styling - Dark mode (muted red, not harsh) */
+  --invalid-bg-1: oklch(0.28 0.06 25);
+  --invalid-bg-2: oklch(0.24 0.04 25);
+  --invalid-cross: oklch(0.55 0.15 25);
+
+  /* Tooltip styling - Dark mode */
+  --tooltip-bg: oklch(0.22 0 0);
+  --tooltip-text: oklch(0.92 0 0);
+  --tooltip-border: oklch(0.32 0 0);
+  --tooltip-shadow: 0 4px 12px oklch(0 0 0 / 0.4);
+
+  /* Add detail panel tokens for dark mode */
+  --panel-bg: oklch(0.18 0 0);
+  --panel-header-bg: oklch(0.22 0.02 160);
+  --panel-text: oklch(0.92 0 0);
+  --panel-text-muted: oklch(0.65 0 0);
+  --panel-border: oklch(0.3 0 0);
+  --panel-divider: oklch(0.28 0 0);
+  --panel-item-bg: oklch(0.22 0 0);
+  --panel-badge-bg: oklch(0.28 0 0);
+  --panel-badge-text: oklch(0.75 0 0);
+  --panel-weekend-badge-bg: oklch(0.26 0.03 220);
+  --panel-weekend-badge-text: oklch(0.72 0.05 220);
+  --panel-halfday-bg: oklch(0.28 0.06 85);
+  --panel-halfday-text: oklch(0.8 0.08 85);
+  --panel-close-hover: oklch(0.26 0 0);
+  --panel-accent-dot: oklch(0.65 0.18 160);
+
+  --marker-size-workday: 26px;
+  --marker-size-weekend: 10px;
+}
+
+@theme inline {
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Add vacation selection animation keyframes */
+@keyframes vacation-select-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes vacation-deselect-pulse {
+  0% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.98);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes vacation-range-sweep {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.vacation-animate-select {
+  animation: vacation-select-pulse 0.25s ease-out forwards;
+}
+
+.vacation-animate-deselect {
+  animation: vacation-deselect-pulse 0.25s ease-out forwards;
+}
+
+.vacation-animate-range {
+  animation: vacation-range-sweep 0.15s ease-out forwards;
+}
+
+/* Drag preview styling with subtle animation */
+.vacation-drag-preview-add {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px dashed var(--primary);
+  background-color: oklch(0.65 0.18 160 / 0.25);
+  box-sizing: border-box;
+  animation: vacation-select-pulse 0.15s ease-out;
+}
+
+.vacation-drag-preview-remove {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px dashed oklch(0.55 0.22 25);
+  background-color: oklch(0.55 0.22 25 / 0.2);
+  box-sizing: border-box;
+  animation: vacation-deselect-pulse 0.15s ease-out;
+}
+
+/* Add shift+click preview styles for live range preview */
+.vacation-shift-preview-add {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px solid var(--primary);
+  background-color: oklch(0.65 0.18 160 / 0.3);
+  box-sizing: border-box;
+}
+
+.vacation-shift-preview-remove {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px solid oklch(0.55 0.22 25);
+  background-color: oklch(0.55 0.22 25 / 0.25);
+  box-sizing: border-box;
+}
+
+/* Add crosshair highlight styles for row/column navigation */
+/* Made highlight colors more transparent and subtle */
+.calendar-row-highlight {
+  background-color: oklch(0.65 0.18 160 / 0.04) !important;
+}
+
+.calendar-col-highlight {
+  background-color: oklch(0.65 0.18 160 / 0.04) !important;
+}
+
+.calendar-cell-highlight {
+  background-color: oklch(0.65 0.18 160 / 0.08) !important;
+  outline: 1px solid oklch(0.65 0.18 160 / 0.4);
+  outline-offset: -1px;
+  z-index: 5;
+}
+
+.dark .calendar-row-highlight {
+  background-color: oklch(0.65 0.18 160 / 0.06) !important;
+}
+
+.dark .calendar-col-highlight {
+  background-color: oklch(0.65 0.18 160 / 0.06) !important;
+}
+
+.dark .calendar-cell-highlight {
+  background-color: oklch(0.65 0.18 160 / 0.12) !important;
+  outline: 1px solid oklch(0.65 0.18 160 / 0.5);
+}
