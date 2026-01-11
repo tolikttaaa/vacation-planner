@@ -28,6 +28,7 @@ components/holiday-calendar/
 ├── holiday-pie-marker.tsx      # SVG pie chart for multi-holiday days
 ├── location-selector.tsx       # Country/region picker with search
 ├── custom-calendar-manager.tsx # Dialog for creating/editing custom calendars
+├── person-panel.tsx            # Person cards and per-person planning actions
 ├── vacation-toolbar.tsx        # Controls for vacation mode
 ├── vacation-results-panel.tsx  # Summary table with interval breakdown
 ├── vacation-mode-toggle.tsx    # Toggle button for vacation selection mode
@@ -102,16 +103,13 @@ function getNextDayISO(dateStr: string): string {
 - **Live preview** shows dashed borders on cells that will be affected
 - **Mouse up** commits the selection by calling `toggleVacationDates`
 
-### 6. Crosshair Highlighting
+### 6. Person-Centric Planning
 
-Tracks hovered row (month index 0-11) and column (day index 0-30) in state:
-
-```typescript
-const [hoveredRow, setHoveredRow] = useState<number | null>(null)
-const [hoveredCol, setHoveredCol] = useState<number | null>(null)
-```
-
-Cells apply highlight class when their row OR column matches the hovered position.
+- Each person has a single assigned calendar (official or custom).
+- Vacation selections and summaries are stored per person.
+- Overview mode allows browsing holiday data without selecting a person.
+- The calendar grid highlights days that include any person on vacation and the day detail panel lists those people.
+- Legend markers document multi-holiday days, selected days, and vacation states.
 
 ### 7. Theme System (`lib/theme-context.tsx`)
 

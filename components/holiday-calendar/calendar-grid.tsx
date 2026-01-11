@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useCallback, useRef, forwardRef, useImperativeHandle, Fragment } from "react"
-import type { DayInfo, LocationConfig, CustomCalendar } from "@/lib/types"
+import type { DayInfo, LocationConfig, CustomCalendar, PersonProfile } from "@/lib/types"
 import { HolidayPieMarker } from "./holiday-pie-marker"
 import { getDatesBetween } from "@/lib/date-utils"
 
@@ -19,6 +19,7 @@ interface CalendarGridProps {
     startISO: string,
     endISO: string,
   ) => { mode: "add" | "remove"; affectedDates: string[] } | void
+  vacationPeopleByDate?: Map<string, PersonProfile[]>
   rangeStart?: string | null
   onRangeStartChange?: (dateISO: string | null) => void
   onVacationDragSelect?: (dateISOs: string[], mode: "add" | "remove") => void
@@ -58,6 +59,7 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
     vacationDates = new Set(),
     onVacationToggle,
     onVacationRangeSelect,
+    vacationPeopleByDate = new Map(),
     rangeStart = null,
     onRangeStartChange,
     onVacationDragSelect,
@@ -255,6 +257,8 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
               const dayInfo = yearData.get(`${monthIndex}-${day}`)
               const isSelected = selectedDay?.dateISO === dayInfo?.dateISO
               const isVacationSelected = dayInfo?.isValid && vacationDates.has(dayInfo.dateISO)
+              const vacationPeopleCount =
+                dayInfo?.isValid && dayInfo.dateISO ? vacationPeopleByDate.get(dayInfo.dateISO)?.length ?? 0 : 0
               const isRangeStartCell = rangeStart === dayInfo?.dateISO
               const isBeingDragged = isDragging && dayInfo?.isValid && draggedDates.has(dayInfo.dateISO)
               const isInShiftPreview = dayInfo?.isValid && shiftPreviewDates.has(dayInfo.dateISO)
@@ -285,6 +289,7 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
                   onHover={setHoveredDate}
                   onCellHover={handleCellHover}
                   vacationDates={vacationDates}
+                  vacationPeopleCount={vacationPeopleCount}
                 />
               )
             })}
@@ -319,6 +324,7 @@ interface GridCalendarCellProps {
   onHover?: (dateISO: string | null) => void
   onCellHover?: (month: number | null, day: number | null) => void
   vacationDates?: Set<string>
+  vacationPeopleCount?: number
 }
 
 function GridCalendarCell({
@@ -344,6 +350,7 @@ function GridCalendarCell({
   onHover,
   onCellHover,
   vacationDates = new Set(),
+  vacationPeopleCount = 0,
 }: GridCalendarCellProps) {
   const cellRef = useRef<HTMLDivElement>(null)
 
@@ -489,11 +496,11 @@ function GridCalendarCell({
   return (
     <div
       ref={cellRef}
-      className={`text-center text-xs cursor-pointer transition-colors ${
-        isSelected && !isVacationMode ? "ring-2 ring-sky-500 ring-inset" : ""
-      } ${isRangeStart ? "ring-2 ring-amber-500 ring-inset" : ""} ${animationClass}`}
+      className={`text-center text-xs cursor-pointer transition-colors ${isRangeStart ? "ring-2 ring-amber-500 ring-inset" : ""} ${animationClass}`}
       style={{
         ...baseStyle,
+        outline: isSelected && !isVacationMode ? "2px solid var(--calendar-selected-stroke)" : undefined,
+        outlineOffset: isSelected && !isVacationMode ? "-2px" : undefined,
         backgroundColor: cellBackground || undefined,
       }}
       onMouseEnter={handleMouseEnter}
@@ -507,6 +514,15 @@ function GridCalendarCell({
       aria-label={ariaLabel}
       aria-selected={isSelected}
     >
+      {vacationPeopleCount > 0 && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            border: "2px dotted var(--calendar-vacation-stroke)",
+            boxSizing: "border-box",
+          }}
+        />
+      )}
       {hasHolidays && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <HolidayPieMarker holidays={holidayLocations} isWeekend={isWeekend} />

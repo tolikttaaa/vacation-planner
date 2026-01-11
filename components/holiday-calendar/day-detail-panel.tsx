@@ -1,19 +1,21 @@
 "use client"
 
 import { X } from "lucide-react"
-import type { DayInfo, DayLocationInfo } from "@/lib/types"
+import type { DayInfo, DayLocationInfo, PersonProfile } from "@/lib/types"
 import { getContrastTextColor } from "@/lib/color-manager"
 
 interface DayDetailPanelProps {
   dayInfo: DayInfo | null
+  restingPeople: PersonProfile[]
   onClose: () => void
 }
 
-export function DayDetailPanel({ dayInfo, onClose }: DayDetailPanelProps) {
+export function DayDetailPanel({ dayInfo, restingPeople, onClose }: DayDetailPanelProps) {
   if (!dayInfo) return null
 
   // Split holidays from ordinary location info for the detail view.
   const holidayLocations = dayInfo.locations.filter((loc) => loc.isHoliday)
+  const hasRestingPeople = restingPeople.length > 0
   const weekdayName = dayInfo.date.toLocaleDateString("en-US", { weekday: "long" })
   const dateHeader = `${dayInfo.dateISO} (${weekdayName})`
 
@@ -71,7 +73,25 @@ export function DayDetailPanel({ dayInfo, onClose }: DayDetailPanelProps) {
       </div>
 
       {/* Content */}
-      <div className="p-4 max-h-64 overflow-y-auto">
+      <div className="p-4 max-h-64 overflow-y-auto space-y-4">
+        {hasRestingPeople && (
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wide font-medium" style={{ color: "var(--panel-text-muted)" }}>
+              People on vacation
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {restingPeople.map((person) => (
+                <span
+                  key={person.id}
+                  className="px-2 py-1 rounded text-xs font-medium"
+                  style={{ backgroundColor: "var(--panel-item-bg)", color: "var(--panel-text)" }}
+                >
+                  {person.name || "Unnamed"}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
         {holidayLocations.length === 0 ? (
           <p className="text-sm" style={{ color: "var(--panel-text-muted)" }}>
             {dayInfo.isGlobalWeekend ? "Weekend day with no special holidays." : "Regular working day."}

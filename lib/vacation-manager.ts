@@ -64,21 +64,44 @@ export interface VacationSummary {
 }
 
 interface StoredVacationData {
-  [year: number]: string[] // ISO date strings
+  [personId: string]: {
+    [year: number]: string[]
+  }
+}
+
+type LegacyStoredVacationData = Record<string, string[]>
+
+function isLegacyVacationData(data: unknown): data is LegacyStoredVacationData {
+  if (!data || typeof data !== "object") return false
+  return Object.values(data).every((value) => Array.isArray(value))
 }
 
 // Load vacation dates from localStorage (with legacy key fallback).
-export function loadVacationDates(year: number): Set<string> {
-  const data = readJsonStorage<StoredVacationData>(STORAGE_KEYS.vacation, LEGACY_STORAGE_KEYS.vacation)
-  if (data) return new Set(data[year] || [])
-  return new Set()
+export function loadVacationDates(personId: string, year: number): Set<string> {
+  const data = readJsonStorage<StoredVacationData | LegacyStoredVacationData>(
+    STORAGE_KEYS.vacation,
+    LEGACY_STORAGE_KEYS.vacation,
+  )
+  if (!data) return new Set()
+
+  if (isLegacyVacationData(data)) {
+    return new Set(data[String(year)] || [])
+  }
+
+  return new Set(data[personId]?.[year] || [])
 }
 
 // Save vacation dates to localStorage.
-export function saveVacationDates(year: number, dates: Set<string>): void {
+export function saveVacationDates(personId: string, year: number, dates: Set<string>): void {
   try {
-    const data: StoredVacationData = readJsonStorage<StoredVacationData>(STORAGE_KEYS.vacation) ?? {}
-    data[year] = Array.from(dates).sort()
+    const existing = readJsonStorage<StoredVacationData | LegacyStoredVacationData>(STORAGE_KEYS.vacation) ?? {}
+    const data: StoredVacationData = isLegacyVacationData(existing)
+      ? { [personId]: existing }
+      : (existing as StoredVacationData)
+
+    const personData = data[personId] ?? {}
+    personData[year] = Array.from(dates).sort()
+    data[personId] = personData
     writeJsonStorage(STORAGE_KEYS.vacation, data)
   } catch {
     // Ignore write errors
@@ -86,19 +109,25 @@ export function saveVacationDates(year: number, dates: Set<string>): void {
 }
 
 // Toggle a single date in the vacation set.
-export function toggleVacationDate(year: number, dateISO: string, currentDates: Set<string>): Set<string> {
+export function toggleVacationDate(
+  personId: string,
+  year: number,
+  dateISO: string,
+  currentDates: Set<string>,
+): Set<string> {
   const newDates = new Set(currentDates)
   if (newDates.has(dateISO)) {
     newDates.delete(dateISO)
   } else {
     newDates.add(dateISO)
   }
-  saveVacationDates(year, newDates)
+  saveVacationDates(personId, year, newDates)
   return newDates
 }
 
 // Add a range of dates to the vacation set.
 export function addVacationRange(
+  personId: string,
   year: number,
   startISO: string,
   endISO: string,
@@ -127,14 +156,14 @@ export function addVacationRange(
     current.setDate(current.getDate() + 1)
   }
 
-  saveVacationDates(year, newDates)
+  saveVacationDates(personId, year, newDates)
   return newDates
 }
 
 // Clear all vacation dates for a year.
-export function clearVacationDates(year: number): Set<string> {
+export function clearVacationDates(personId: string, year: number): Set<string> {
   const emptySet = new Set<string>()
-  saveVacationDates(year, emptySet)
+  saveVacationDates(personId, year, emptySet)
   return emptySet
 }
 
@@ -490,6 +519,7 @@ export function exportVacationResultsCSV(summary: VacationSummary): string {
 
 // Toggle a range of dates in the vacation set.
 export function toggleVacationRange(
+  personId: string,
   year: number,
   startISO: string,
   endISO: string,
@@ -531,6 +561,6 @@ export function toggleVacationRange(
     }
   }
 
-  saveVacationDates(year, newDates)
+  saveVacationDates(personId, year, newDates)
   return { newDates, mode, affectedDates: rangeDates }
 }

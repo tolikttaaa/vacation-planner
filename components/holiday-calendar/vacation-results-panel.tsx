@@ -7,9 +7,11 @@ import { getContrastTextColor } from "@/lib/color-manager"
 
 interface VacationResultsPanelProps {
   summary: VacationSummary
+  compact?: boolean
+  forceExpanded?: boolean
 }
 
-export function VacationResultsPanel({ summary }: VacationResultsPanelProps) {
+export function VacationResultsPanel({ summary, compact = false, forceExpanded = false }: VacationResultsPanelProps) {
   // Track which location row is expanded to show interval details.
   const [expandedLocation, setExpandedLocation] = useState<string | null>(null)
 
@@ -28,6 +30,28 @@ export function VacationResultsPanel({ summary }: VacationResultsPanelProps) {
       return `${interval.startISO} (${weekday})`
     }
     return `${interval.startISO} → ${interval.endISO}`
+  }
+
+  const listContent = (
+    <div className="divide-y" style={{ borderColor: "var(--panel-divider)" }}>
+      {summary.intervalsByLocation.map((locSummary) => (
+        <LocationIntervalRow
+          key={locSummary.locationId}
+          locSummary={locSummary}
+          isExpanded={forceExpanded ? true : expandedLocation === locSummary.locationId}
+          onToggleExpand={forceExpanded ? undefined : () => toggleExpanded(locSummary.locationId)}
+          formatIntervalRange={formatIntervalRange}
+          compact={compact}
+          forceExpanded={forceExpanded}
+          hideRowStats={forceExpanded}
+          hideHeader={forceExpanded}
+        />
+      ))}
+    </div>
+  )
+
+  if (compact) {
+    return listContent
   }
 
   return (
@@ -50,7 +74,7 @@ export function VacationResultsPanel({ summary }: VacationResultsPanelProps) {
       >
         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "var(--panel-accent-dot)" }} />
         <h3 className="font-semibold" style={{ color: "var(--panel-text)" }}>
-          Vacation Requirements by Region
+          Vacation Requirements
         </h3>
       </div>
 
@@ -90,17 +114,7 @@ export function VacationResultsPanel({ summary }: VacationResultsPanelProps) {
         </div>
       </div>
 
-      <div className="divide-y" style={{ borderColor: "var(--panel-divider)" }}>
-        {summary.intervalsByLocation.map((locSummary) => (
-          <LocationIntervalRow
-            key={locSummary.locationId}
-            locSummary={locSummary}
-            isExpanded={expandedLocation === locSummary.locationId}
-            onToggleExpand={() => toggleExpanded(locSummary.locationId)}
-            formatIntervalRange={formatIntervalRange}
-          />
-        ))}
-      </div>
+      {listContent}
     </div>
   )
 }
@@ -108,8 +122,12 @@ export function VacationResultsPanel({ summary }: VacationResultsPanelProps) {
 interface LocationIntervalRowProps {
   locSummary: VacationLocationSummary
   isExpanded: boolean
-  onToggleExpand: () => void
+  onToggleExpand?: () => void
   formatIntervalRange: (interval: VacationInterval) => string
+  compact?: boolean
+  forceExpanded?: boolean
+  hideRowStats?: boolean
+  hideHeader?: boolean
 }
 
 function LocationIntervalRow({
@@ -117,23 +135,42 @@ function LocationIntervalRow({
   isExpanded,
   onToggleExpand,
   formatIntervalRange,
+  compact = false,
+  forceExpanded = false,
+  hideRowStats = false,
+  hideHeader = false,
 }: LocationIntervalRowProps) {
   // Use high-contrast label color for the location pill.
   const textColor = getContrastTextColor(locSummary.color)
   const hasIntervals = locSummary.intervals.length > 0
 
+  if (hideHeader) {
+    if (!isExpanded || !hasIntervals) return null
+    return (
+      <div className="px-4 pb-4 pt-8" style={{ backgroundColor: "var(--panel-item-bg)" }}>
+        <div className="space-y-3">
+          {locSummary.intervals.map((interval, idx) => (
+            <IntervalCard key={idx} interval={interval} formatIntervalRange={formatIntervalRange} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div>
       {/* Location header row */}
       <div
-        className={`px-4 py-3 flex items-center justify-between cursor-pointer transition-colors ${hasIntervals ? "hover:bg-muted/30" : ""}`}
+        className={`px-4 py-3 flex items-center justify-between cursor-pointer transition-colors ${
+          hasIntervals ? "hover:bg-muted/30" : ""
+        }`}
         onClick={hasIntervals ? onToggleExpand : undefined}
-        style={{ backgroundColor: isExpanded ? "var(--panel-item-bg)" : undefined }}
+        style={{ backgroundColor: compact ? "var(--panel-item-bg)" : isExpanded ? "var(--panel-item-bg)" : undefined }}
       >
         <div className="flex items-center gap-3">
           {hasIntervals && (
             <span className="text-muted-foreground">
-              {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              {isExpanded || forceExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             </span>
           )}
           <span
@@ -144,32 +181,34 @@ function LocationIntervalRow({
           </span>
         </div>
 
-        <div className="flex items-center gap-6 text-sm">
-          <div className="text-center">
-            <div className="text-xs" style={{ color: "var(--panel-text-muted)" }}>
-              Planned
+        {!hideRowStats && (
+          <div className="flex items-center gap-6 text-sm">
+            <div className="text-center">
+              <div className="text-xs" style={{ color: "var(--panel-text-muted)" }}>
+                Planned
+              </div>
+              <div className="font-medium" style={{ color: "var(--panel-text)" }}>
+                {locSummary.totalPlanned}
+              </div>
             </div>
-            <div className="font-medium" style={{ color: "var(--panel-text)" }}>
-              {locSummary.totalPlanned}
+            <div className="text-center">
+              <div className="text-xs" style={{ color: "var(--panel-text-muted)" }}>
+                Excluded
+              </div>
+              <div className="font-medium" style={{ color: "var(--panel-text-muted)" }}>
+                -{locSummary.totalExcluded}
+              </div>
+            </div>
+            <div className="text-center min-w-16">
+              <div className="text-xs" style={{ color: "var(--panel-text-muted)" }}>
+                Required
+              </div>
+              <div className="font-bold text-lg" style={{ color: "var(--panel-text)" }}>
+                {locSummary.totalRequired}
+              </div>
             </div>
           </div>
-          <div className="text-center">
-            <div className="text-xs" style={{ color: "var(--panel-text-muted)" }}>
-              Excluded
-            </div>
-            <div className="font-medium" style={{ color: "var(--panel-text-muted)" }}>
-              -{locSummary.totalExcluded}
-            </div>
-          </div>
-          <div className="text-center min-w-16">
-            <div className="text-xs" style={{ color: "var(--panel-text-muted)" }}>
-              Required
-            </div>
-            <div className="font-bold text-lg" style={{ color: "var(--panel-text)" }}>
-              {locSummary.totalRequired}
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Expanded interval details */}

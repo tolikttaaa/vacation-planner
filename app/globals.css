@@ -71,6 +71,10 @@
   --calendar-grid-line: oklch(0.88 0 0);
   --calendar-weekend-bg: oklch(0.9 0 0);
   --calendar-weekend-text: oklch(0.4 0 0);
+  --calendar-selected-stroke: #e69d28;
+  --calendar-vacation-stroke: #e69d2880;
+  --calendar-vacation-count-bg: oklch(0.45 0.15 160);
+  --calendar-vacation-count-text: oklch(0.98 0 0);
 
   /* Invalid date styling - Light mode */
   --invalid-bg-1: oklch(0.88 0.08 25);
@@ -170,6 +174,10 @@
   --calendar-grid-line: oklch(0.28 0 0);
   --calendar-weekend-bg: oklch(0.26 0 0);
   --calendar-weekend-text: oklch(0.65 0 0);
+  --calendar-selected-stroke: #e69d28;
+  --calendar-vacation-stroke: #e69d2880;
+  --calendar-vacation-count-bg: oklch(0.55 0.18 160);
+  --calendar-vacation-count-text: oklch(0.12 0 0);
 
   /* Invalid date styling - Dark mode (muted red, not harsh) */
   --invalid-bg-1: oklch(0.28 0.06 25);
