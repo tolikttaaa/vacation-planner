@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 function Select({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Root>) {
+  // Root select wrapper to standardize data-slot usage.
   return <SelectPrimitive.Root data-slot="select" {...props} />
 }
 
@@ -32,6 +33,7 @@ function SelectTrigger({
 }: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
   size?: 'sm' | 'default'
 }) {
+  // Trigger button with size-based styling.
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
@@ -56,6 +58,7 @@ function SelectContent({
   position = 'popper',
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
+  // Popover content with optional popper positioning.
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content

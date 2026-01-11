@@ -3,11 +3,20 @@
 import { Sun, Moon, Monitor } from "lucide-react"
 import { useTheme } from "@/lib/theme-context"
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  orientation?: "horizontal" | "vertical"
+}
+
+export function ThemeToggle({ orientation = "horizontal" }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme()
 
+  // Simple three-state theme selector (light/dark/system).
   return (
-    <div className="flex items-center gap-1 p-1 bg-secondary rounded-lg">
+    <div
+      className={`flex ${
+        orientation === "vertical" ? "flex-col" : "flex-row"
+      } items-center gap-1 p-1 bg-secondary rounded-lg`}
+    >
       <button
         onClick={() => setTheme("light")}
         className={`p-2 rounded-md transition-colors ${

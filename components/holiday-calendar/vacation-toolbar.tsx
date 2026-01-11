@@ -11,6 +11,7 @@ interface VacationToolbarProps {
 }
 
 export function VacationToolbar({ vacationCount, onClearAll, isRangeSelecting, rangeStart }: VacationToolbarProps) {
+  // Provide inline guidance while vacation mode is active.
   return (
     <div
       className="flex flex-wrap items-center gap-3 p-3 rounded-lg mb-4"

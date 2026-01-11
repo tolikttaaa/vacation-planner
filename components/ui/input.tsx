@@ -3,6 +3,7 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
+  // Shared input styling with Tailwind class merging.
   return (
     <input
       type={type}

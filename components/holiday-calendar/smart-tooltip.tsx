@@ -26,9 +26,13 @@ export function SmartTooltip({
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    // Delay tooltip rendering until after mount to avoid hydration mismatch.
+    /* eslint-disable react-hooks/set-state-in-effect */
     setMounted(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
+  // Measure anchor/tooltip to position within the viewport.
   useEffect(() => {
     if (!anchorRef.current || !tooltipRef.current || !mounted) return
 
@@ -37,7 +41,7 @@ export function SmartTooltip({
     const viewportHeight = window.innerHeight
     const viewportWidth = window.innerWidth
 
-    // Determine vertical placement
+    // Determine vertical placement.
     const spaceAbove = anchor.top
     const spaceBelow = viewportHeight - anchor.bottom
 
@@ -55,7 +59,7 @@ export function SmartTooltip({
       newPlacement = "top"
     }
 
-    // Horizontal centering with viewport constraints
+    // Horizontal centering with viewport constraints.
     let left = anchor.left + anchor.width / 2 - tooltip.width / 2 + window.scrollX
     left = Math.max(8, Math.min(left, viewportWidth - tooltip.width - 8 + window.scrollX))
 
@@ -143,6 +147,7 @@ export function SmartTooltip({
 }
 
 function HolidayItem({ loc }: { loc: DayLocationInfo }) {
+  // Pick a readable text color for the location pill.
   const textColor = getContrastTextColor(loc.color)
 
   return (

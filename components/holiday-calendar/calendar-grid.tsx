@@ -2,10 +2,10 @@
 
 import type React from "react"
 
-import { useState, useCallback, useRef, forwardRef, useImperativeHandle } from "react"
+import { useState, useCallback, useRef, forwardRef, useImperativeHandle, Fragment } from "react"
 import type { DayInfo, LocationConfig, CustomCalendar } from "@/lib/types"
-import { DayDetailPanel } from "./day-detail-panel"
 import { HolidayPieMarker } from "./holiday-pie-marker"
+import { getDatesBetween } from "@/lib/date-utils"
 
 interface CalendarGridProps {
   year: number
@@ -22,12 +22,15 @@ interface CalendarGridProps {
   rangeStart?: string | null
   onRangeStartChange?: (dateISO: string | null) => void
   onVacationDragSelect?: (dateISOs: string[], mode: "add" | "remove") => void
+  selectedDay?: DayInfo | null
+  onSelectedDayChange?: (day: DayInfo | null) => void
 }
 
 interface CalendarGridRef {
   getGridElement: () => HTMLDivElement | null
 }
 
+// Month labels used by the grid rows.
 const MONTHS = [
   "January",
   "February",
@@ -42,25 +45,8 @@ const MONTHS = [
   "November",
   "December",
 ]
-
-function getDatesBetween(startISO: string, endISO: string): string[] {
-  const dates: string[] = []
-  const start = new Date(startISO)
-  const end = new Date(endISO)
-
-  if (start > end) {
-    const temp = new Date(start)
-    start.setTime(end.getTime())
-    end.setTime(temp.getTime())
-  }
-
-  const current = new Date(start)
-  while (current <= end) {
-    dates.push(current.toISOString().split("T")[0])
-    current.setDate(current.getDate() + 1)
-  }
-  return dates
-}
+const DAY_ROW_HEIGHT = 36
+const DAY_CELL_MIN_SIZE = DAY_ROW_HEIGHT
 
 export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(function CalendarGrid(
   {
@@ -75,10 +61,11 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
     rangeStart = null,
     onRangeStartChange,
     onVacationDragSelect,
+    selectedDay = null,
+    onSelectedDayChange,
   },
   ref,
 ) {
-  const [selectedDay, setSelectedDay] = useState<DayInfo | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [dragMode, setDragMode] = useState<"add" | "remove">("add")
   const [draggedDates, setDraggedDates] = useState<Set<string>>(new Set())
@@ -94,18 +81,20 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
 
   const gridRef = useRef<HTMLDivElement>(null)
 
+  // Expose grid root for PNG export.
   useImperativeHandle(ref, () => ({
     getGridElement: () => gridRef.current,
   }))
 
-  const handleDaySelect = useCallback((dayInfo: DayInfo) => {
-    setSelectedDay((prev) => (prev?.dateISO === dayInfo.dateISO ? null : dayInfo))
-  }, [])
+  // Toggle the detail panel on single-day selection.
+  const handleDaySelect = useCallback(
+    (dayInfo: DayInfo) => {
+      onSelectedDayChange?.(selectedDay?.dateISO === dayInfo.dateISO ? null : dayInfo)
+    },
+    [onSelectedDayChange, selectedDay],
+  )
 
-  const handleClosePanel = useCallback(() => {
-    setSelectedDay(null)
-  }, [])
-
+  // Begin a drag-select gesture in vacation mode.
   const handleDragStart = useCallback(
     (dateISO: string, isCurrentlySelected: boolean, e: React.MouseEvent) => {
       if (!isVacationMode) return
@@ -118,6 +107,7 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
     [isVacationMode],
   )
 
+  // Track drag movement to build the selection set.
   const handleDragOver = useCallback(
     (dateISO: string, e: React.MouseEvent) => {
       if (!dragStartPos.current || !isVacationMode) return
@@ -141,6 +131,7 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
     [isDragging, isVacationMode],
   )
 
+  // Commit drag selection and play the animation.
   const handleDragEnd = useCallback(() => {
     if (!dragStartPos.current) return
 
@@ -163,6 +154,7 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
     hasDragMoved.current = false
   }, [isDragging, dragMode, draggedDates, onVacationDragSelect])
 
+  // Shift-click range selection with animation.
   const handleRangeSelect = useCallback(
     (startISO: string, endISO: string) => {
       if (!onVacationRangeSelect) return
@@ -180,6 +172,7 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
     [onVacationRangeSelect],
   )
 
+  // Highlight row/column crosshair on hover.
   const handleCellHover = useCallback((month: number | null, day: number | null) => {
     if (month === null || day === null) {
       setHoveredCell(null)
@@ -188,6 +181,7 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
     }
   }, [])
 
+  // Shift-click preview highlights the date range before commit.
   const shiftPreviewDates =
     rangeStart && hoveredDate && rangeStart !== hoveredDate
       ? new Set(getDatesBetween(rangeStart, hoveredDate))
@@ -205,13 +199,15 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
         ref={gridRef}
         className="grid select-none w-full"
         style={{
-          gridTemplateColumns: "100px repeat(31, 1fr)",
+          gridTemplateColumns: `100px repeat(31, minmax(${DAY_CELL_MIN_SIZE}px, 1fr))`,
+          gridAutoRows: `${DAY_ROW_HEIGHT}px`,
           backgroundColor: "var(--calendar-bg)",
+          minWidth: `calc(100px + 31 * ${DAY_CELL_MIN_SIZE}px)`,
         }}
       >
         {/* Header row */}
         <div
-          className="sticky left-0 z-20 px-3 py-3 text-left font-semibold text-sm flex items-center"
+          className="sticky left-0 z-20 px-3 text-left font-semibold text-sm flex items-center h-full"
           style={{
             backgroundColor: "var(--calendar-header-bg)",
             color: "var(--calendar-header-text)",
@@ -225,12 +221,10 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
         {Array.from({ length: 31 }, (_, i) => (
           <div
             key={i}
-            className={`py-3 text-center font-semibold text-sm flex items-center justify-center ${
-              hoveredCell?.day === i + 1 ? "calendar-col-highlight" : ""
-            }`}
+            className="text-center font-semibold text-sm flex items-center justify-center h-full"
             style={{
               color: "var(--calendar-header-text)",
-              backgroundColor: hoveredCell?.day === i + 1 ? undefined : "var(--calendar-header-bg)",
+              backgroundColor: "var(--calendar-header-bg)",
               borderWidth: "1px",
               borderStyle: "solid",
               borderColor: "var(--calendar-grid-line)",
@@ -242,20 +236,18 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
 
         {/* Month rows */}
         {MONTHS.map((month, monthIndex) => (
-          <>
-            <div
-              key={`${month}-label`}
-              className={`sticky left-0 z-10 px-3 py-2 font-medium text-sm flex items-center ${
-                hoveredCell?.month === monthIndex ? "calendar-row-highlight" : ""
-              }`}
-              style={{
-                backgroundColor: hoveredCell?.month === monthIndex ? undefined : "var(--calendar-month-bg)",
-                color: "var(--calendar-header-text)",
-                borderWidth: "1px",
-                borderStyle: "solid",
-                borderColor: "var(--calendar-grid-line)",
-              }}
-            >
+          <Fragment key={month}>
+          <div
+            key={`${month}-label`}
+            className="sticky left-0 z-10 px-3 font-medium text-sm flex items-center h-full"
+            style={{
+              backgroundColor: "var(--calendar-month-bg)",
+              color: "var(--calendar-header-text)",
+              borderWidth: "1px",
+              borderStyle: "solid",
+              borderColor: "var(--calendar-grid-line)",
+            }}
+          >
               {month}
             </div>
             {Array.from({ length: 31 }, (_, dayIndex) => {
@@ -267,10 +259,6 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
               const isBeingDragged = isDragging && dayInfo?.isValid && draggedDates.has(dayInfo.dateISO)
               const isInShiftPreview = dayInfo?.isValid && shiftPreviewDates.has(dayInfo.dateISO)
               const animationMode = dayInfo?.isValid ? animatingCells.get(dayInfo.dateISO) : undefined
-
-              const isInHighlightedRow = hoveredCell?.month === monthIndex
-              const isInHighlightedCol = hoveredCell?.day === day
-              const isHighlightedCell = isInHighlightedRow && isInHighlightedCol
 
               return (
                 <GridCalendarCell
@@ -297,17 +285,13 @@ export const CalendarGrid = forwardRef<CalendarGridRef, CalendarGridProps>(funct
                   onHover={setHoveredDate}
                   onCellHover={handleCellHover}
                   vacationDates={vacationDates}
-                  isInHighlightedRow={isInHighlightedRow}
-                  isInHighlightedCol={isInHighlightedCol}
-                  isHighlightedCell={isHighlightedCell}
                 />
               )
             })}
-          </>
+          </Fragment>
         ))}
       </div>
 
-      {!isVacationMode && <DayDetailPanel dayInfo={selectedDay} onClose={handleClosePanel} />}
     </div>
   )
 })
@@ -335,9 +319,6 @@ interface GridCalendarCellProps {
   onHover?: (dateISO: string | null) => void
   onCellHover?: (month: number | null, day: number | null) => void
   vacationDates?: Set<string>
-  isInHighlightedRow?: boolean
-  isInHighlightedCol?: boolean
-  isHighlightedCell?: boolean
 }
 
 function GridCalendarCell({
@@ -363,12 +344,10 @@ function GridCalendarCell({
   onHover,
   onCellHover,
   vacationDates = new Set(),
-  isInHighlightedRow = false,
-  isInHighlightedCol = false,
-  isHighlightedCell = false,
 }: GridCalendarCellProps) {
   const cellRef = useRef<HTMLDivElement>(null)
 
+  // Start drag selection on mouse down in vacation mode.
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (!dayInfo?.isValid || !isVacationMode) return
@@ -379,6 +358,7 @@ function GridCalendarCell({
     [dayInfo, isVacationMode, isVacationSelected, onDragStart],
   )
 
+  // Update hover state and extend drag selection.
   const handleMouseEnter = useCallback(
     (e: React.MouseEvent) => {
       onCellHover?.(monthIndex, day)
@@ -390,6 +370,7 @@ function GridCalendarCell({
     [dayInfo, monthIndex, day, onDragOver, onHover, onCellHover],
   )
 
+  // Continue drag selection if the mouse is moving within the cell.
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (dayInfo?.isValid) {
@@ -403,6 +384,7 @@ function GridCalendarCell({
     onHover?.(null)
   }, [onHover])
 
+  // Click handling supports selection, shift-range, and details view.
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       if (!dayInfo?.isValid) return
@@ -426,6 +408,7 @@ function GridCalendarCell({
     [dayInfo, isVacationMode, rangeStart, onVacationToggle, onVacationRangeSelect, onRangeStartChange, onSelect],
   )
 
+  // Keyboard support for accessibility.
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if ((e.key === "Enter" || e.key === " ") && dayInfo?.isValid) {
@@ -441,24 +424,21 @@ function GridCalendarCell({
   )
 
   const baseStyle: React.CSSProperties = {
-    aspectRatio: "1 / 1",
     position: "relative",
     borderWidth: "1px",
     borderStyle: "solid",
     borderColor: "var(--calendar-grid-line)",
     overflow: "hidden",
+    height: "100%",
   }
 
   if (!dayInfo || !dayInfo.isValid) {
     return (
       <div
-        className={`text-center text-xs ${isInHighlightedRow || isInHighlightedCol ? "calendar-col-highlight" : ""}`}
+        className="text-center text-xs"
         style={{
           ...baseStyle,
-          background:
-            isInHighlightedRow || isInHighlightedCol
-              ? undefined
-              : `repeating-linear-gradient(
+          background: `repeating-linear-gradient(
             45deg,
             var(--invalid-bg-1),
             var(--invalid-bg-1) 2px,
@@ -469,16 +449,14 @@ function GridCalendarCell({
         onMouseEnter={() => onCellHover?.(monthIndex, day)}
         aria-label={`Day ${day} - Invalid date`}
       >
-        {!(isInHighlightedRow || isInHighlightedCol) && (
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            viewBox="0 0 32 32"
-            preserveAspectRatio="none"
-          >
-            <line x1="4" y1="4" x2="28" y2="28" stroke="var(--invalid-cross)" strokeWidth="1.5" strokeLinecap="round" />
-            <line x1="28" y1="4" x2="4" y2="28" stroke="var(--invalid-cross)" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        )}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          viewBox="0 0 32 32"
+          preserveAspectRatio="none"
+        >
+          <line x1="4" y1="4" x2="28" y2="28" stroke="var(--invalid-cross)" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="28" y1="4" x2="4" y2="28" stroke="var(--invalid-cross)" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
       </div>
     )
   }
@@ -497,14 +475,7 @@ function GridCalendarCell({
     return label
   })()
 
-  let cellBackground: string
-  if (isHighlightedCell) {
-    cellBackground = ""
-  } else if (isInHighlightedRow || isInHighlightedCol) {
-    cellBackground = ""
-  } else {
-    cellBackground = isWeekend ? "var(--calendar-weekend-bg)" : "var(--calendar-cell-bg)"
-  }
+  const cellBackground = isWeekend ? "var(--calendar-weekend-bg)" : "var(--calendar-cell-bg)"
 
   const showDragAddPreview = isBeingDragged && !isVacationSelected && dragMode === "add"
   const showDragRemovePreview = isBeingDragged && isVacationSelected && dragMode === "remove"
@@ -515,18 +486,12 @@ function GridCalendarCell({
   const animationClass =
     animationMode === "add" ? "vacation-animate-select" : animationMode === "remove" ? "vacation-animate-deselect" : ""
 
-  const highlightClass = isHighlightedCell
-    ? "calendar-cell-highlight"
-    : isInHighlightedRow || isInHighlightedCol
-      ? "calendar-col-highlight"
-      : ""
-
   return (
     <div
       ref={cellRef}
       className={`text-center text-xs cursor-pointer transition-colors ${
-        isSelected && !isVacationMode ? "ring-2 ring-primary ring-inset" : ""
-      } ${isRangeStart ? "ring-2 ring-amber-500 ring-inset" : ""} ${animationClass} ${highlightClass}`}
+        isSelected && !isVacationMode ? "ring-2 ring-sky-500 ring-inset" : ""
+      } ${isRangeStart ? "ring-2 ring-amber-500 ring-inset" : ""} ${animationClass}`}
       style={{
         ...baseStyle,
         backgroundColor: cellBackground || undefined,

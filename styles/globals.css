@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+/* Base theme tokens for light/dark plus Tailwind variable mapping. */
 @custom-variant dark (&:is(.dark *));
 
 :root {

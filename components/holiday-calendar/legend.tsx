@@ -10,7 +10,7 @@ interface LegendProps {
 }
 
 export function Legend({ selectedLocations, customCalendars }: LegendProps) {
-  // Create sample markers for the legend using dynamic colors
+  // Create sample markers for the legend using dynamic colors.
   const sampleMarkers = selectedLocations.slice(0, 3).map((loc) => ({
     locationId: loc.id,
     locationName: loc.name,

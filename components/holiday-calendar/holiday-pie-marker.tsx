@@ -10,8 +10,10 @@ interface HolidayPieMarkerProps {
 export function HolidayPieMarker({ holidays, isWeekend = false }: HolidayPieMarkerProps) {
   if (holidays.length === 0) return null
 
+  // Weekend markers are slightly larger to improve visibility.
   const sizeVar = isWeekend ? "var(--marker-size-weekend)" : "var(--marker-size-workday)"
 
+  // Single-location holiday renders as a solid dot.
   if (holidays.length === 1) {
     return (
       <div
@@ -25,17 +27,16 @@ export function HolidayPieMarker({ holidays, isWeekend = false }: HolidayPieMark
     )
   }
 
+  // Up to 8 holidays render as a pie chart.
   if (holidays.length <= 8) {
     const total = holidays.length
-    let currentAngle = -90
+    const sliceAngle = 360 / total
 
     return (
       <svg className="drop-shadow-sm" style={{ width: sizeVar, height: sizeVar }} viewBox="0 0 24 24">
         {holidays.map((holiday, index) => {
-          const sliceAngle = 360 / total
-          const startAngle = currentAngle
-          const endAngle = currentAngle + sliceAngle
-          currentAngle = endAngle
+          const startAngle = -90 + sliceAngle * index
+          const endAngle = startAngle + sliceAngle
 
           const startRad = (startAngle * Math.PI) / 180
           const endRad = (endAngle * Math.PI) / 180
@@ -58,6 +59,7 @@ export function HolidayPieMarker({ holidays, isWeekend = false }: HolidayPieMark
     )
   }
 
+  // Beyond 8 holidays, show an 8-slice wheel and total count.
   return (
     <svg className="drop-shadow-sm" style={{ width: sizeVar, height: sizeVar }} viewBox="0 0 24 24">
       {holidays.slice(0, 8).map((holiday, i) => {

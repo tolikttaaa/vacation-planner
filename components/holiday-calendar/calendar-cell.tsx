@@ -16,9 +16,12 @@ interface CalendarCellProps {
 }
 
 export function CalendarCell({ dayInfo, day, isSelected, onSelect }: CalendarCellProps) {
+  // Tooltip visibility is tied to hover/focus for keyboard accessibility.
   const [showTooltip, setShowTooltip] = useState(false)
   const cellRef = useRef<HTMLTableCellElement>(null)
 
+
+  // Use a render model to keep UI logic consistent across views.
   const renderModel = computeCellRenderModel(dayInfo)
 
   const handleFocus = useCallback(() => setShowTooltip(true), [])
@@ -91,8 +94,7 @@ export function CalendarCell({ dayInfo, day, isSelected, onSelect }: CalendarCel
     return label
   })()
 
-  // Working days always get cell-bg, weekends always get weekend-bg
-  // Holiday indication is ONLY via the centered marker
+  // Working days use default background; holidays are only shown via markers.
   const cellBackground = renderModel.dayType === "WEEKEND" ? "var(--calendar-weekend-bg)" : "var(--calendar-cell-bg)"
 
   return (

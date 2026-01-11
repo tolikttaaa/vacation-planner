@@ -1,8 +1,8 @@
 import type { CustomCalendar, HolidayType } from "./types"
 import { EUROPEAN_LOCATIONS } from "./european-locations"
 import { fetchOfficialHolidays, isHolidayForLocation } from "./holiday-service"
-
-const STORAGE_KEY = "holiday-planner-custom-calendars"
+import { LEGACY_STORAGE_KEYS, STORAGE_KEYS } from "./constants"
+import { readJsonStorage, writeJsonStorage } from "./storage"
 
 export interface CustomCalendarValidationError {
   field: string
@@ -20,6 +20,7 @@ const DAY_MAP: Record<string, number> = {
   SATURDAY: 6,
 }
 
+// Convert custom calendar weekend rules into numeric weekday indexes.
 export function getWeekendDaysFromRules(rules?: { weekend?: string[] }): number[] {
   if (!rules?.weekend || rules.weekend.length === 0) {
     return [0, 6] // Default Sat/Sun
@@ -27,6 +28,7 @@ export function getWeekendDaysFromRules(rules?: { weekend?: string[] }): number[
   return rules.weekend.map((day) => DAY_MAP[day]).filter((d) => d !== undefined)
 }
 
+// Validate custom calendar JSON payloads before import.
 export function validateCustomCalendar(json: unknown): {
   valid: boolean
   errors: CustomCalendarValidationError[]
@@ -131,23 +133,22 @@ export function validateCustomCalendar(json: unknown): {
   }
 }
 
+// Load custom calendars from localStorage (with legacy key fallback).
 export function loadCustomCalendars(): CustomCalendar[] {
   if (typeof window === "undefined") return []
 
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (!stored) return []
-    return JSON.parse(stored) as CustomCalendar[]
-  } catch {
-    return []
-  }
+  return (
+    readJsonStorage<CustomCalendar[]>(STORAGE_KEYS.customCalendars, LEGACY_STORAGE_KEYS.customCalendars) ?? []
+  )
 }
 
+// Persist custom calendars to localStorage.
 export function saveCustomCalendars(calendars: CustomCalendar[]): void {
   if (typeof window === "undefined") return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(calendars))
+  writeJsonStorage(STORAGE_KEYS.customCalendars, calendars)
 }
 
+// Add a new custom calendar with duplicate ID protection.
 export function addCustomCalendar(calendar: CustomCalendar): { success: boolean; error?: string } {
   const calendars = loadCustomCalendars()
 
@@ -161,6 +162,7 @@ export function addCustomCalendar(calendar: CustomCalendar): { success: boolean;
   return { success: true }
 }
 
+// Replace an existing custom calendar by ID.
 export function updateCustomCalendar(calendar: CustomCalendar): { success: boolean; error?: string } {
   const calendars = loadCustomCalendars()
   const index = calendars.findIndex((c) => c.meta.id === calendar.meta.id)
@@ -174,15 +176,18 @@ export function updateCustomCalendar(calendar: CustomCalendar): { success: boole
   return { success: true }
 }
 
+// Remove a custom calendar by ID.
 export function deleteCustomCalendar(id: string): void {
   const calendars = loadCustomCalendars()
   saveCustomCalendars(calendars.filter((c) => c.meta.id !== id))
 }
 
+// Fetch a single custom calendar by ID.
 export function getCustomCalendarById(id: string): CustomCalendar | undefined {
   return loadCustomCalendars().find((c) => c.meta.id === id)
 }
 
+// Build a custom calendar template by cloning official holidays for a location.
 export async function createCalendarFromLocation(
   locationId: string,
   year: number,
@@ -228,6 +233,7 @@ export async function createCalendarFromLocation(
   }
 }
 
+// Curated subset for quick selection.
 export function getPopularLocations(): Array<{ id: string; name: string }> {
   const popularIds = [
     "cy",
@@ -250,6 +256,7 @@ export function getPopularLocations(): Array<{ id: string; name: string }> {
   return EUROPEAN_LOCATIONS.filter((loc) => popularIds.includes(loc.id)).map((loc) => ({ id: loc.id, name: loc.name }))
 }
 
+// Flat list for location dropdowns.
 export function getAllLocationsForDropdown(): Array<{ id: string; name: string; type: string }> {
   return EUROPEAN_LOCATIONS.map((loc) => ({
     id: loc.id,

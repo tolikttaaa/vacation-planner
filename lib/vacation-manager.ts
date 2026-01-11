@@ -2,6 +2,9 @@
 // Handles selection, persistence, and calculation of vacation days per region
 
 import type { DayInfo, LocationConfig, CustomCalendar } from "./types"
+import { LEGACY_STORAGE_KEYS, STORAGE_KEYS } from "./constants"
+import { getNextDayISO, getWeekdayName } from "./date-utils"
+import { readJsonStorage, writeJsonStorage } from "./storage"
 
 export interface VacationDateDetail {
   dateISO: string
@@ -60,39 +63,29 @@ export interface VacationSummary {
   intervalsByLocation: VacationLocationSummary[]
 }
 
-const VACATION_STORAGE_KEY = "holiday-planner-vacation"
-
 interface StoredVacationData {
   [year: number]: string[] // ISO date strings
 }
 
-// Load vacation dates from localStorage
+// Load vacation dates from localStorage (with legacy key fallback).
 export function loadVacationDates(year: number): Set<string> {
-  try {
-    const stored = localStorage.getItem(VACATION_STORAGE_KEY)
-    if (stored) {
-      const data: StoredVacationData = JSON.parse(stored)
-      return new Set(data[year] || [])
-    }
-  } catch {
-    // Ignore parse errors
-  }
+  const data = readJsonStorage<StoredVacationData>(STORAGE_KEYS.vacation, LEGACY_STORAGE_KEYS.vacation)
+  if (data) return new Set(data[year] || [])
   return new Set()
 }
 
-// Save vacation dates to localStorage
+// Save vacation dates to localStorage.
 export function saveVacationDates(year: number, dates: Set<string>): void {
   try {
-    const stored = localStorage.getItem(VACATION_STORAGE_KEY)
-    const data: StoredVacationData = stored ? JSON.parse(stored) : {}
+    const data: StoredVacationData = readJsonStorage<StoredVacationData>(STORAGE_KEYS.vacation) ?? {}
     data[year] = Array.from(dates).sort()
-    localStorage.setItem(VACATION_STORAGE_KEY, JSON.stringify(data))
+    writeJsonStorage(STORAGE_KEYS.vacation, data)
   } catch {
     // Ignore write errors
   }
 }
 
-// Toggle a single date in the vacation set
+// Toggle a single date in the vacation set.
 export function toggleVacationDate(year: number, dateISO: string, currentDates: Set<string>): Set<string> {
   const newDates = new Set(currentDates)
   if (newDates.has(dateISO)) {
@@ -104,7 +97,7 @@ export function toggleVacationDate(year: number, dateISO: string, currentDates: 
   return newDates
 }
 
-// Add a range of dates to the vacation set
+// Add a range of dates to the vacation set.
 export function addVacationRange(
   year: number,
   startISO: string,
@@ -138,30 +131,14 @@ export function addVacationRange(
   return newDates
 }
 
-// Clear all vacation dates for a year
+// Clear all vacation dates for a year.
 export function clearVacationDates(year: number): Set<string> {
   const emptySet = new Set<string>()
   saveVacationDates(year, emptySet)
   return emptySet
 }
 
-// Get weekday name from ISO date
-function getWeekdayName(dateISO: string): string {
-  const [year, month, day] = dateISO.split("-").map(Number)
-  const date = new Date(year, month - 1, day)
-  return date.toLocaleDateString("en-US", { weekday: "long" })
-}
-
-function getNextDayISO(dateISO: string): string {
-  const [year, month, day] = dateISO.split("-").map(Number)
-  const date = new Date(year, month - 1, day)
-  date.setDate(date.getDate() + 1)
-  const nextYear = date.getFullYear()
-  const nextMonth = String(date.getMonth() + 1).padStart(2, "0")
-  const nextDay = String(date.getDate()).padStart(2, "0")
-  return `${nextYear}-${nextMonth}-${nextDay}`
-}
-
+// Group a list of date details into consecutive intervals for display.
 export function groupDatesIntoIntervals(dates: VacationDateDetail[]): DateInterval[] {
   if (dates.length === 0) return []
 
@@ -207,7 +184,7 @@ export function groupDatesIntoIntervals(dates: VacationDateDetail[]): DateInterv
   return intervals
 }
 
-// Compute vacation statistics for a single location
+// Compute vacation statistics for a single location.
 function computeLocationStats(
   locationId: string,
   locationName: string,
@@ -284,6 +261,7 @@ function computeLocationStats(
   }
 }
 
+// Build interval summaries for a location's planned dates.
 function computeLocationIntervals(
   locationId: string,
   locationName: string,
@@ -350,6 +328,7 @@ function computeLocationIntervals(
   }
 }
 
+// Compute interval metrics for a date run (required vs excluded).
 function buildIntervalStats(
   startISO: string,
   endISO: string,
@@ -373,8 +352,7 @@ function buildIntervalStats(
     const locInfo = dayInfo.locations.find((l) => l.locationId === locationId)
     if (!locInfo) continue
 
-    const [year, mon, d] = dateISO.split("-").map(Number)
-    const weekday = new Date(year, mon - 1, d).toLocaleDateString("en-US", { weekday: "long" })
+    const weekday = getWeekdayName(dateISO)
 
     if (locInfo.isWeekend) {
       excludedWeekends++
@@ -408,7 +386,7 @@ function buildIntervalStats(
   }
 }
 
-// Compute vacation statistics for all selected locations
+// Compute vacation statistics for all selected locations.
 export function computeVacationSummary(
   vacationDates: Set<string>,
   yearData: Map<string, DayInfo>,
@@ -478,7 +456,7 @@ export function computeVacationSummary(
   }
 }
 
-// Export vacation dates to CSV
+// Export vacation dates to CSV.
 export function exportVacationDatesCSV(year: number, vacationDates: Set<string>): string {
   const sortedDates = Array.from(vacationDates).sort()
   const lines = ["Date,Weekday"]
@@ -491,7 +469,7 @@ export function exportVacationDatesCSV(year: number, vacationDates: Set<string>)
   return lines.join("\n")
 }
 
-// Export vacation results table to CSV
+// Export vacation results table to CSV.
 export function exportVacationResultsCSV(summary: VacationSummary): string {
   const lines = ["Region/Calendar,Planned Dates,Excluded (Weekends),Excluded (Holidays),Vacation Days Required"]
 
@@ -510,7 +488,7 @@ export function exportVacationResultsCSV(summary: VacationSummary): string {
   return lines.join("\n")
 }
 
-// Toggle a range of dates in the vacation set
+// Toggle a range of dates in the vacation set.
 export function toggleVacationRange(
   year: number,
   startISO: string,
@@ -540,7 +518,7 @@ export function toggleVacationRange(
     current.setDate(current.getDate() + 1)
   }
 
-  // Determine mode: if majority of range is selected, we deselect; otherwise select
+  // Determine mode: if majority of range is selected, we deselect; otherwise select.
   const selectedCount = rangeDates.filter((d) => currentDates.has(d)).length
   const mode: "add" | "remove" = selectedCount > rangeDates.length / 2 ? "remove" : "add"
 
