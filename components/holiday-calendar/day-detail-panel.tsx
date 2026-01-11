@@ -12,6 +12,7 @@ interface DayDetailPanelProps {
 export function DayDetailPanel({ dayInfo, onClose }: DayDetailPanelProps) {
   if (!dayInfo) return null
 
+  // Split holidays from ordinary location info for the detail view.
   const holidayLocations = dayInfo.locations.filter((loc) => loc.isHoliday)
   const weekdayName = dayInfo.date.toLocaleDateString("en-US", { weekday: "long" })
   const dateHeader = `${dayInfo.dateISO} (${weekdayName})`
@@ -91,8 +92,10 @@ export function DayDetailPanel({ dayInfo, onClose }: DayDetailPanelProps) {
 }
 
 function HolidayDetailRow({ loc }: { loc: DayLocationInfo }) {
+  // Pick a readable text color against the location badge.
   const textColor = getContrastTextColor(loc.color)
 
+  // Friendly label for the holiday type.
   const typeLabel = (() => {
     switch (loc.holidayType) {
       case "PUBLIC_HOLIDAY":

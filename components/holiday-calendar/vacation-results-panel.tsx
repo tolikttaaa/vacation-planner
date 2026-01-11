@@ -10,6 +10,7 @@ interface VacationResultsPanelProps {
 }
 
 export function VacationResultsPanel({ summary }: VacationResultsPanelProps) {
+  // Track which location row is expanded to show interval details.
   const [expandedLocation, setExpandedLocation] = useState<string | null>(null)
 
   if (summary.totalPlannedDates === 0) {
@@ -20,6 +21,7 @@ export function VacationResultsPanel({ summary }: VacationResultsPanelProps) {
     setExpandedLocation((prev) => (prev === locationId ? null : locationId))
   }
 
+  // Format the interval header text for display.
   const formatIntervalRange = (interval: VacationInterval): string => {
     if (interval.startISO === interval.endISO) {
       const weekday = new Date(interval.startISO).toLocaleDateString("en-US", { weekday: "short" })
@@ -30,24 +32,30 @@ export function VacationResultsPanel({ summary }: VacationResultsPanelProps) {
 
   return (
     <div
-      className="mt-4 rounded-xl overflow-hidden"
+      className="rounded-lg shadow-lg overflow-hidden"
       style={{
         backgroundColor: "var(--panel-bg)",
         border: "1px solid var(--panel-border)",
       }}
     >
       {/* Header */}
-      <div className="px-4 py-3" style={{ backgroundColor: "var(--panel-header-bg)" }}>
+      <div
+        className="flex items-center gap-3 px-4 py-3"
+        style={{
+          backgroundColor: "var(--panel-header-bg)",
+          borderBottomWidth: "1px",
+          borderBottomStyle: "solid",
+          borderBottomColor: "var(--panel-divider)",
+        }}
+      >
+        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "var(--panel-accent-dot)" }} />
         <h3 className="font-semibold" style={{ color: "var(--panel-text)" }}>
           Vacation Requirements by Region
         </h3>
       </div>
 
       {/* Summary cards */}
-      <div
-        className="px-4 py-3 grid grid-cols-1 md:grid-cols-3 gap-3"
-        style={{ borderBottom: "1px solid var(--panel-divider)" }}
-      >
+      <div className="px-4 py-3 grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="p-3 rounded-lg" style={{ backgroundColor: "var(--panel-item-bg)" }}>
           <div className="text-xs mb-1" style={{ color: "var(--panel-text-muted)" }}>
             Total Planned Days
@@ -110,6 +118,7 @@ function LocationIntervalRow({
   onToggleExpand,
   formatIntervalRange,
 }: LocationIntervalRowProps) {
+  // Use high-contrast label color for the location pill.
   const textColor = getContrastTextColor(locSummary.color)
   const hasIntervals = locSummary.intervals.length > 0
 
@@ -183,6 +192,7 @@ interface IntervalCardProps {
 }
 
 function IntervalCard({ interval, formatIntervalRange }: IntervalCardProps) {
+  // Render a single vacation interval and its excluded days.
   return (
     <div
       className="rounded-lg p-3"

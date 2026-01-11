@@ -1,6 +1,6 @@
 # Implementation Details
 
-This document describes the technical architecture and implementation decisions for the Holiday Planner application.
+This document describes the technical architecture and implementation decisions for the Vacation Planner application.
 
 ## Architecture Overview
 
@@ -12,10 +12,17 @@ lib/
 ├── custom-calendar-service.ts  # Custom calendar CRUD operations
 ├── vacation-manager.ts         # Vacation selection and calculation logic
 ├── color-manager.ts            # Dynamic color assignment algorithm
-└── theme-context.tsx           # React context for light/dark theme
+├── theme-context.tsx           # React context for light/dark theme
+├── constants.ts                # App-wide labels and storage keys
+├── date-utils.ts               # Shared date helpers (ISO, ranges, weekdays)
+└── storage.ts                  # localStorage helpers with legacy migration
 
 components/holiday-calendar/
 ├── index.tsx                   # Main orchestrator component
+├── constants.ts                # Layout tokens for the main panels
+├── controls-panel.tsx          # App-level controls and selection UI
+├── calendar-panel.tsx          # Calendar grid + loading/empty states
+├── footer-note.tsx             # Data source attribution
 ├── calendar-grid.tsx           # 12x31 grid with drag selection
 ├── calendar-cell.tsx           # Individual day cell (unused, logic merged into grid)
 ├── holiday-pie-marker.tsx      # SVG pie chart for multi-holiday days
@@ -27,10 +34,14 @@ components/holiday-calendar/
 ├── legend.tsx                  # Color legend for selected locations
 ├── year-selector.tsx           # Year navigation controls
 ├── theme-toggle.tsx            # Light/dark/system theme switcher
-├── export-button.tsx           # CSV export functionality
+├── png-export-button.tsx       # PNG export functionality
 ├── day-detail-panel.tsx        # Expandable details for selected day
-├── smart-tooltip.tsx           # Position-aware tooltip (deprecated)
-└── vacation-background.tsx     # Decorative SVG background pattern
+├── smart-tooltip.tsx           # Position-aware tooltip
+├── vacation-background.tsx     # Decorative SVG background pattern
+└── hooks/
+    ├── use-calendar-state.ts   # Persisted selection state
+    ├── use-holiday-data.ts     # Year data fetching
+    └── use-vacation-state.ts   # Vacation selection + summary
 ```
 
 ## Key Implementation Details
@@ -59,7 +70,7 @@ hue = (index * goldenAngle) % 360
 
 ### 3. Vacation Calculation (`lib/vacation-manager.ts`)
 
-The `computeVacationResults` function:
+The `computeVacationSummary` function:
 
 1. Takes selected vacation dates and active locations
 2. For each location, categorizes each date as:
@@ -114,17 +125,21 @@ Cells apply highlight class when their row OR column matches the hovered positio
 ```typescript
 interface CustomCalendar {
   meta: {
-    id: string        // Unique identifier, prefixed with "custom:"
-    name: string      // Display name
-    country: string   // Country name for grouping
-    region?: string   // Optional region name
+    id: string            // Unique identifier
+    name: string          // Display name
+    description?: string  // Optional description
+    timezone?: string     // Optional timezone
+    defaultColor: string  // Base color (overridden by dynamic assignment)
   }
-  weekendDays: number[]  // 0=Sunday, 6=Saturday
+  rules?: {
+    weekend?: string[]    // Day names, e.g. ["SATURDAY", "SUNDAY"]
+  }
   holidays: Array<{
-    date: string      // ISO format: "YYYY-MM-DD"
-    name: string      // Holiday name
-    type?: string     // Optional: "Public", "Bank", etc.
-    note?: string     // Optional note
+    date: string          // ISO format: "YYYY-MM-DD"
+    name: string          // Holiday name
+    type: string          // PUBLIC_HOLIDAY | OBSERVANCE | COMPANY_HOLIDAY | OTHER
+    halfDay?: boolean     // Optional half-day flag
+    notes?: string        // Optional notes
   }>
 }
 ```

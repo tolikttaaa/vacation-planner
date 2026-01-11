@@ -7,5 +7,6 @@ import {
 } from 'next-themes'
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+  // Thin wrapper around next-themes provider for app-level usage.
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }

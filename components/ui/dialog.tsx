@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
+  // Root dialog wrapper to standardize data-slot usage.
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
@@ -54,6 +55,7 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  // Dialog content with overlay + optional close button.
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />

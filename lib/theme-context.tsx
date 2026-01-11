@@ -1,6 +1,8 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { LEGACY_STORAGE_KEYS, STORAGE_KEYS } from "./constants"
+import { readStorageValue, writeStorageValue } from "./storage"
 
 type Theme = "light" | "dark" | "system"
 
@@ -16,23 +18,25 @@ const ThemeContext = createContext<ThemeContextType>({
   setTheme: () => {},
 })
 
-const THEME_STORAGE_KEY = "holiday-planner-theme"
-
+// Theme state is persisted to localStorage with a legacy fallback for migrations.
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system")
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light")
   const [mounted, setMounted] = useState(false)
 
-  // Initialize theme from localStorage or system preference
+  // Initialize theme from localStorage or system preference.
   useEffect(() => {
-    const stored = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null
+    // Initialize theme state from persisted preference.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    const stored = readStorageValue(STORAGE_KEYS.theme, LEGACY_STORAGE_KEYS.theme) as Theme | null
     if (stored && ["light", "dark", "system"].includes(stored)) {
       setThemeState(stored)
     }
     setMounted(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
-  // Resolve system theme and apply class
+  // Resolve system theme and apply class.
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
 
@@ -45,7 +49,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       }
       setResolvedTheme(resolved)
 
-      // Apply dark class to html element
+      // Apply dark class to html element.
       if (resolved === "dark") {
         document.documentElement.classList.add("dark")
       } else {
@@ -61,7 +65,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme)
-    localStorage.setItem(THEME_STORAGE_KEY, newTheme)
+    writeStorageValue(STORAGE_KEYS.theme, newTheme)
   }
 
   return (

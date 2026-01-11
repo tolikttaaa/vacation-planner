@@ -9,6 +9,7 @@ function TooltipProvider({
   delayDuration = 0,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
+  // Shared provider with configurable delay.
   return (
     <TooltipPrimitive.Provider
       data-slot="tooltip-provider"
@@ -40,6 +41,7 @@ function TooltipContent({
   children,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Content>) {
+  // Tooltip content with portal rendering and animation classes.
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Content

@@ -1,6 +1,10 @@
-# Holiday Planner
+![Vacation Planner Logo](public/img/VacationPlanner_LogoWithName.svg)
+
+# Vacation Planner
 
 A comprehensive vacation and holiday planning application built with Next.js that helps you visualize public holidays across multiple European countries and regions, plan your vacations, and calculate required leave days.
+
+This is a personal pet project built by me with AI agents (no manual coding). It will evolve incrementally as I have free time and agent tokens.
 
 ## Features
 
@@ -13,8 +17,9 @@ A comprehensive vacation and holiday planning application built with Next.js tha
 ### Calendar Visualization
 - **12-month grid view** showing all days of the year at a glance
 - **Pie chart markers** for days with multiple holidays from different locations
-- **Crosshair highlighting** to easily track row (month) and column (day)
+- **Fixed headers and legend** so month/day labels stay visible while scrolling the grid
 - **Invalid date styling** with cross-hatched pattern for non-existent dates (Feb 30, etc.)
+- **Adaptive cell sizing** with a minimum width and consistent row height
 
 ### Custom Calendars
 - **Create your own calendars** with custom holidays and weekend rules
@@ -30,9 +35,9 @@ A comprehensive vacation and holiday planning application built with Next.js tha
 - **Export to CSV** for use in other applications
 
 ### User Experience
-- **Responsive design** with horizontal scrolling for smaller screens
+- **Responsive design** with horizontal grid scrolling while panels and detail sections remain fixed
 - **Persistent state** via localStorage (selected locations, year, vacations, custom calendars)
-- **Minimalist vacation-themed background** with line-art illustrations
+- **Minimalist vacation-themed background** with line-art illustrations and themed panel styling
 
 ## Getting Started
 

@@ -9,6 +9,7 @@ function Tabs({
   className,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Root>) {
+  // Root tabs wrapper with layout styling.
   return (
     <TabsPrimitive.Root
       data-slot="tabs"
@@ -38,6 +39,7 @@ function TabsTrigger({
   className,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
+  // Individual tab button with active-state styles.
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useMemo } from "react"
 import { Check, ChevronDown, ChevronRight, Search, X } from "lucide-react"
 import type { LocationConfig } from "@/lib/types"
 import { getLocationsByCountry } from "@/lib/european-locations"
+import { getContrastTextColor } from "@/lib/color-manager"
 
 interface LocationSelectorProps {
   locations: LocationConfig[]
@@ -13,11 +14,13 @@ interface LocationSelectorProps {
 }
 
 export function LocationSelector({ locations, selectedIds, onSelectionChange, colorMap }: LocationSelectorProps) {
+  // Local UI state for dropdown search and country expansion.
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set())
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Map selection IDs to their assigned colors.
   const getColor = (id: string) => {
     if (selectedIds.includes(id)) {
       return colorMap.get(id) || "#6b7280"
@@ -25,6 +28,7 @@ export function LocationSelector({ locations, selectedIds, onSelectionChange, co
     return "#9ca3af" // Neutral gray for unselected
   }
 
+  // Close the dropdown when clicking outside the component.
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -36,7 +40,7 @@ export function LocationSelector({ locations, selectedIds, onSelectionChange, co
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  // Group locations by country
+  // Group locations by country, optionally filtered by search.
   const groupedLocations = useMemo(() => {
     const grouped = getLocationsByCountry()
 
@@ -58,6 +62,7 @@ export function LocationSelector({ locations, selectedIds, onSelectionChange, co
     return filtered
   }, [search])
 
+  // Toggle a single location on/off.
   const toggleLocation = (id: string) => {
     if (selectedIds.includes(id)) {
       onSelectionChange(selectedIds.filter((i) => i !== id))
@@ -66,6 +71,7 @@ export function LocationSelector({ locations, selectedIds, onSelectionChange, co
     }
   }
 
+  // Expand/collapse a country's region list.
   const toggleCountryExpand = (countryName: string) => {
     const newExpanded = new Set(expandedCountries)
     if (newExpanded.has(countryName)) {
@@ -76,6 +82,7 @@ export function LocationSelector({ locations, selectedIds, onSelectionChange, co
     setExpandedCountries(newExpanded)
   }
 
+  // Select or deselect all regions under a country.
   const selectAllInCountry = (countryName: string) => {
     const countryLocs = groupedLocations.get(countryName) || []
     const countryIds = countryLocs.map((l) => l.id)
@@ -216,28 +223,29 @@ export function LocationSelector({ locations, selectedIds, onSelectionChange, co
         </div>
       )}
 
-      {/* Selected locations chips - use dynamic colors */}
+      {/* Selected locations chips - legend-style labels */}
       {selectedLocations.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
-          {selectedLocations.slice(0, 5).map((location) => (
-            <span
+          {selectedLocations.map((location) => (
+            <button
               key={location.id}
-              className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full text-white"
-              style={{ backgroundColor: colorMap.get(location.id) || "#6b7280" }}
+              onClick={() => toggleLocation(location.id)}
+              className="flex items-center gap-2 rounded-full px-2 py-1 text-xs hover:bg-muted/70 transition-colors"
+              title={`Remove ${location.name}`}
             >
-              {location.name.length > 20
-                ? location.name.split(" — ")[1] || location.name.slice(0, 15) + "..."
-                : location.name}
-              <button onClick={() => toggleLocation(location.id)} className="hover:bg-white/20 rounded-full p-0.5">
-                <X className="w-3 h-3" />
-              </button>
-            </span>
+              <span
+                className="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                style={{
+                  backgroundColor: colorMap.get(location.id) || "#6b7280",
+                  color: getContrastTextColor(colorMap.get(location.id) || "#6b7280"),
+                }}
+              >
+                {location.name.split(" — ").pop()?.slice(0, 3)}
+              </span>
+              <span className="text-xs text-muted-foreground">{location.name.split(" — ").pop()}</span>
+              <X className="w-3 h-3 text-muted-foreground" />
+            </button>
           ))}
-          {selectedLocations.length > 5 && (
-            <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-muted text-muted-foreground">
-              +{selectedLocations.length - 5} more
-            </span>
-          )}
         </div>
       )}
     </div>

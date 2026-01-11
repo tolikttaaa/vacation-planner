@@ -38,6 +38,7 @@ export function CustomCalendarManager({
   colorMap,
   year = 2026,
 }: CustomCalendarManagerProps) {
+  // Local UI state for editor dialogs and validation feedback.
   const [calendars, setCalendars] = useState<CustomCalendar[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingCalendar, setEditingCalendar] = useState<CustomCalendar | null>(null)
@@ -47,10 +48,12 @@ export function CustomCalendarManager({
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [allLocations] = useState(() => getAllLocationsForDropdown())
 
+  // Load persisted calendars on mount.
   useEffect(() => {
     setCalendars(loadCustomCalendars())
   }, [])
 
+  // Resolve dynamic color for each calendar based on current selection.
   const getColor = (calendarId: string) => {
     const fullId = `custom-${calendarId}`
     if (enabledCalendarIds.includes(fullId)) {
@@ -59,6 +62,7 @@ export function CustomCalendarManager({
     return "#9ca3af"
   }
 
+  // Parse uploaded JSON files into the editor.
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -72,6 +76,7 @@ export function CustomCalendarManager({
     reader.readAsText(file)
   }
 
+  // Generate a calendar template by cloning official holidays.
   const handleLoadFromLocation = async (locationId: string) => {
     if (!locationId) return
 
@@ -93,6 +98,7 @@ export function CustomCalendarManager({
     }
   }
 
+  // Validate JSON, then add/update the calendar in storage.
   const handleValidateAndSave = () => {
     try {
       const parsed = JSON.parse(jsonInput)
@@ -129,6 +135,7 @@ export function CustomCalendarManager({
     }
   }
 
+  // Remove a calendar and update enabled list.
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this calendar?")) {
       deleteCustomCalendar(id)
@@ -138,6 +145,7 @@ export function CustomCalendarManager({
     }
   }
 
+  // Populate the editor with a calendar for editing.
   const handleEdit = (calendar: CustomCalendar) => {
     setEditingCalendar(calendar)
     setJsonInput(JSON.stringify(calendar, null, 2))
@@ -145,17 +153,20 @@ export function CustomCalendarManager({
     setIsDialogOpen(true)
   }
 
+  // Download a single calendar JSON export.
   const handleDownloadJSON = (calendar: CustomCalendar) => {
     const json = JSON.stringify(calendar, null, 2)
     const blob = new Blob([json], { type: "application/json;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.download = `${calendar.meta.id}.json`
+    const safeName = calendar.meta.name.replace(/[\\/:*?"<>|]+/g, "-").trim() || calendar.meta.id
+    link.download = `${safeName}.json`
     link.click()
     URL.revokeObjectURL(url)
   }
 
+  // Toggle enabled state for a custom calendar.
   const toggleCalendarEnabled = (calendarId: string) => {
     const fullId = `custom-${calendarId}`
     if (enabledCalendarIds.includes(fullId)) {
@@ -165,6 +176,7 @@ export function CustomCalendarManager({
     }
   }
 
+  // Quick utilities for user guidance.
   const copyExampleToClipboard = () => {
     navigator.clipboard.writeText(JSON.stringify(EXAMPLE_CUSTOM_CALENDAR, null, 2))
   }
@@ -174,6 +186,7 @@ export function CustomCalendarManager({
     setErrors([])
   }
 
+  // Group locations by country for the picker UI.
   const groupedLocations = allLocations.reduce(
     (acc, loc) => {
       const countryName = loc.name.split(" — ")[0]
@@ -190,32 +203,20 @@ export function CustomCalendarManager({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-foreground">Custom Calendars</h3>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setEditingCalendar(null)
-                setJsonInput("")
-                setErrors([])
-              }}
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Add
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingCalendar ? "Edit Custom Calendar" : "Add Custom Calendar"}</DialogTitle>
-            </DialogHeader>
+      </div>
 
-            <Tabs defaultValue="paste" className="mt-4">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="paste">Paste JSON</TabsTrigger>
-                <TabsTrigger value="upload">Upload File</TabsTrigger>
-                <TabsTrigger value="location">From Location</TabsTrigger>
-              </TabsList>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingCalendar ? "Edit Custom Calendar" : "Add Custom Calendar"}</DialogTitle>
+          </DialogHeader>
+
+          <Tabs defaultValue="paste" className="mt-4">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="paste">Paste JSON</TabsTrigger>
+              <TabsTrigger value="upload">Upload File</TabsTrigger>
+              <TabsTrigger value="location">From Location</TabsTrigger>
+            </TabsList>
 
               <TabsContent value="paste" className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -365,95 +366,111 @@ export function CustomCalendarManager({
                   )}
                 </div>
               </TabsContent>
-            </Tabs>
+          </Tabs>
 
-            {errors.length > 0 && (
-              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 mt-4">
-                <p className="text-sm font-medium text-destructive mb-2">Validation Errors:</p>
-                <ul className="text-xs text-destructive/80 space-y-1">
-                  {errors.map((error, i) => (
-                    <li key={i}>
-                      <strong>{error.field}:</strong> {error.message}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleValidateAndSave} disabled={!jsonInput}>
-                {editingCalendar ? "Update" : "Add"} Calendar
-              </Button>
+          {errors.length > 0 && (
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 mt-4">
+              <p className="text-sm font-medium text-destructive mb-2">Validation Errors:</p>
+              <ul className="text-xs text-destructive/80 space-y-1">
+                {errors.map((error, i) => (
+                  <li key={i}>
+                    <strong>{error.field}:</strong> {error.message}
+                  </li>
+                ))}
+              </ul>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+          )}
 
-      {/* List of custom calendars */}
-      {calendars.length === 0 ? (
-        <p className="text-xs text-muted-foreground italic">No custom calendars added yet</p>
-      ) : (
-        <div className="space-y-2">
-          {calendars.map((calendar) => {
-            const isEnabled = enabledCalendarIds.includes(`custom-${calendar.meta.id}`)
-            const color = getColor(calendar.meta.id)
-            return (
-              <div key={calendar.meta.id} className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => toggleCalendarEnabled(calendar.meta.id)}
-                    className="w-5 h-5 rounded border-2 flex items-center justify-center"
-                    style={{
-                      borderColor: color,
-                      backgroundColor: isEnabled ? color : "transparent",
-                    }}
-                  >
-                    {isEnabled && <Check className="w-3 h-3 text-white" />}
-                  </button>
-                  {isEnabled && <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />}
-                  <span className="text-sm text-foreground">{calendar.meta.name}</span>
-                  <span className="text-xs text-muted-foreground">({calendar.holidays.length} holidays)</span>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleValidateAndSave} disabled={!jsonInput}>
+              {editingCalendar ? "Update" : "Add"} Calendar
+            </Button>
+          </div>
+        </DialogContent>
+
+        {/* List of custom calendars */}
+        {calendars.length === 0 ? (
+          <p className="text-xs text-muted-foreground italic">No custom calendars added yet</p>
+        ) : (
+          <div className="space-y-2">
+            {calendars.map((calendar) => {
+              const isEnabled = enabledCalendarIds.includes(`custom-${calendar.meta.id}`)
+              const color = getColor(calendar.meta.id)
+              return (
+                <div key={calendar.meta.id} className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleCalendarEnabled(calendar.meta.id)}
+                      className="w-5 h-5 rounded border-2 flex items-center justify-center"
+                      style={{
+                        borderColor: color,
+                        backgroundColor: isEnabled ? color : "transparent",
+                      }}
+                    >
+                      {isEnabled && <Check className="w-3 h-3 text-white" />}
+                    </button>
+                    {isEnabled && <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />}
+                    <span className="text-sm text-foreground">{calendar.meta.name}</span>
+                    <span className="text-xs text-muted-foreground">({calendar.holidays.length} holidays)</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="sm" onClick={() => handleDownloadJSON(calendar)}>
+                            <Download className="w-4 h-4 text-muted-foreground" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Download JSON</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(calendar)}>
+                            <Edit className="w-4 h-4 text-muted-foreground" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Edit</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(calendar.meta.id)}>
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Delete</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm" onClick={() => handleDownloadJSON(calendar)}>
-                          <Download className="w-4 h-4 text-muted-foreground" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Download JSON</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(calendar)}>
-                          <Edit className="w-4 h-4 text-muted-foreground" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Edit</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(calendar.meta.id)}>
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Delete</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
+        )}
+
+        <div className="flex justify-start">
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setEditingCalendar(null)
+                setJsonInput("")
+                setErrors([])
+              }}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Add Custom Calendar
+            </Button>
+          </DialogTrigger>
         </div>
-      )}
+      </Dialog>
     </div>
   )
 }

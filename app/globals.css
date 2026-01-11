@@ -38,7 +38,7 @@
   --destructive-foreground: oklch(0.98 0 0);
 
   /* Borders and inputs */
-  --border: oklch(0.88 0 0);
+  --border: #138f54;
   --input: oklch(0.92 0 0);
   --ring: oklch(0.45 0.15 160);
 
@@ -85,11 +85,11 @@
 
   /* Add detail panel tokens for light mode */
   --panel-bg: oklch(0.99 0 0);
-  --panel-header-bg: oklch(0.95 0.03 160);
+  --panel-header-bg: var(--calendar-header-bg);
   --panel-text: oklch(0.15 0 0);
   --panel-text-muted: oklch(0.45 0 0);
-  --panel-border: oklch(0.88 0 0);
-  --panel-divider: oklch(0.9 0 0);
+  --panel-border: #138f54;
+  --panel-divider: #138f54;
   --panel-item-bg: oklch(0.97 0 0);
   --panel-badge-bg: oklch(0.93 0 0);
   --panel-badge-text: oklch(0.35 0 0);
@@ -98,7 +98,7 @@
   --panel-halfday-bg: oklch(0.95 0.08 85);
   --panel-halfday-text: oklch(0.4 0.1 85);
   --panel-close-hover: oklch(0.93 0 0);
-  --panel-accent-dot: oklch(0.55 0.18 160);
+  --panel-accent-dot: #c4722a;
 
   /* Add CSS variables for marker sizes */
   --marker-size-workday: 26px;
@@ -140,7 +140,7 @@
   --destructive-foreground: oklch(0.92 0 0);
 
   /* Borders and inputs - subtle but visible */
-  --border: oklch(0.3 0 0);
+  --border: #138f54;
   --input: oklch(0.26 0 0);
   --ring: oklch(0.65 0.18 160);
 
@@ -184,11 +184,11 @@
 
   /* Add detail panel tokens for dark mode */
   --panel-bg: oklch(0.18 0 0);
-  --panel-header-bg: oklch(0.22 0.02 160);
+  --panel-header-bg: var(--calendar-header-bg);
   --panel-text: oklch(0.92 0 0);
   --panel-text-muted: oklch(0.65 0 0);
-  --panel-border: oklch(0.3 0 0);
-  --panel-divider: oklch(0.28 0 0);
+  --panel-border: #138f54;
+  --panel-divider: #138f54;
   --panel-item-bg: oklch(0.22 0 0);
   --panel-badge-bg: oklch(0.28 0 0);
   --panel-badge-text: oklch(0.75 0 0);
@@ -197,7 +197,7 @@
   --panel-halfday-bg: oklch(0.28 0.06 85);
   --panel-halfday-text: oklch(0.8 0.08 85);
   --panel-close-hover: oklch(0.26 0 0);
-  --panel-accent-dot: oklch(0.65 0.18 160);
+  --panel-accent-dot: #c4722a;
 
   --marker-size-workday: 26px;
   --marker-size-weekend: 10px;
@@ -373,4 +373,8 @@
 .dark .calendar-cell-highlight {
   background-color: oklch(0.65 0.18 160 / 0.12) !important;
   outline: 1px solid oklch(0.65 0.18 160 / 0.5);
+}
+
+.panel-neon {
+  box-shadow: 0 0 0 1px #a9d15d, 0 0 14px rgba(169, 209, 93, 0.55);
 }
