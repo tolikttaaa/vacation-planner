@@ -13,6 +13,7 @@ import {
 
 interface UseVacationStateParams {
   year: number
+  personId: string
   yearData: Map<string, DayInfo>
   selectedLocations: LocationConfig[]
   enabledCalendars: CustomCalendar[]
@@ -22,6 +23,7 @@ interface UseVacationStateParams {
 // Manage vacation selection state, interactions, and summary data.
 export function useVacationState({
   year,
+  personId,
   yearData,
   selectedLocations,
   enabledCalendars,
@@ -35,10 +37,10 @@ export function useVacationState({
   useEffect(() => {
     if (!isInitialized) return
     /* eslint-disable react-hooks/set-state-in-effect */
-    setVacationDates(loadVacationDates(year))
+    setVacationDates(loadVacationDates(personId, year))
     setRangeStart(null)
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [year, isInitialized])
+  }, [personId, year, isInitialized])
 
   const handleVacationModeToggle = useCallback(() => {
     setIsVacationMode((prev) => !prev)
@@ -47,27 +49,27 @@ export function useVacationState({
 
   const handleVacationToggle = useCallback(
     (dateISO: string) => {
-      setVacationDates((prev) => toggleVacationDate(year, dateISO, prev))
+      setVacationDates((prev) => toggleVacationDate(personId, year, dateISO, prev))
     },
-    [year],
+    [personId, year],
   )
 
   const handleVacationRangeSelect = useCallback(
     (startISO: string, endISO: string): { mode: "add" | "remove"; affectedDates: string[] } => {
       let result: { mode: "add" | "remove"; affectedDates: string[] } = { mode: "add", affectedDates: [] }
       setVacationDates((prev) => {
-        const rangeResult = toggleVacationRange(year, startISO, endISO, prev, yearData)
+        const rangeResult = toggleVacationRange(personId, year, startISO, endISO, prev, yearData)
         result = { mode: rangeResult.mode, affectedDates: rangeResult.affectedDates }
         return rangeResult.newDates
       })
       return result
     },
-    [year, yearData],
+    [personId, year, yearData],
   )
 
   const handleClearAllVacation = useCallback(() => {
-    setVacationDates(clearVacationDates(year))
-  }, [year])
+    setVacationDates(clearVacationDates(personId, year))
+  }, [personId, year])
 
   const handleVacationDragSelect = useCallback(
     (dateISOs: string[], mode: "add" | "remove") => {
@@ -86,11 +88,11 @@ export function useVacationState({
             newDates.delete(iso)
           }
         }
-        saveVacationDates(year, newDates)
+        saveVacationDates(personId, year, newDates)
         return newDates
       })
     },
-    [year, yearData],
+    [personId, year, yearData],
   )
 
   const vacationSummary = useMemo(() => {

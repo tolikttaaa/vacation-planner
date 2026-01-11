@@ -21,7 +21,8 @@ export function useHolidayData({ year, selectedLocations, enabledCalendars, isIn
     if (!isInitialized) return
 
     if (selectedLocations.length === 0 && enabledCalendars.length === 0) {
-      setYearData(new Map())
+      setYearData((prev) => (prev.size === 0 ? prev : new Map()))
+      setIsLoading(false)
       return
     }
 

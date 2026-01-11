@@ -11,6 +11,12 @@ export interface Holiday {
   notes?: string
 }
 
+export interface PersonProfile {
+  id: string
+  name: string
+  calendarId: string | null
+}
+
 export type HolidayType = "PUBLIC_HOLIDAY" | "OBSERVANCE" | "COMPANY_HOLIDAY" | "OTHER"
 
 export interface LocationConfig {

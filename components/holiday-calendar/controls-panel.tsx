@@ -1,9 +1,11 @@
 "use client"
 
 import { EUROPEAN_LOCATIONS } from "@/lib/european-locations"
+import { CalendarDays } from "lucide-react"
+import { LocationSelector } from "./location-selector"
+import type { CustomCalendar } from "@/lib/types"
 import { PANEL_STYLES } from "./constants"
 import { CustomCalendarManager } from "./custom-calendar-manager"
-import { LocationSelector } from "./location-selector"
 import { YearSelector } from "./year-selector"
 
 interface ControlsPanelProps {
@@ -13,8 +15,9 @@ interface ControlsPanelProps {
   onSelectionChange: (ids: string[]) => void
   enabledCustomCalendarIds: string[]
   onEnabledCustomCalendarsChange: (ids: string[]) => void
-  onCalendarsChange: () => void
   colorMap: Map<string, string>
+  customCalendars: CustomCalendar[]
+  onCalendarsChange: () => void
 }
 
 // Controls panel for app-level filters and settings.
@@ -25,8 +28,9 @@ export function ControlsPanel({
   onSelectionChange,
   enabledCustomCalendarIds,
   onEnabledCustomCalendarsChange,
-  onCalendarsChange,
   colorMap,
+  customCalendars,
+  onCalendarsChange,
 }: ControlsPanelProps) {
   return (
     <div className={`${PANEL_STYLES.container} p-4 md:p-6 relative`}>
@@ -36,7 +40,11 @@ export function ControlsPanel({
 
       <div className="space-y-6">
         <div>
-          <h3 className="text-sm font-medium text-foreground mb-2">Official Calendars</h3>
+          <div className="flex items-center gap-2 mb-3">
+            <CalendarDays className="w-5 h-5 text-foreground" />
+            <h3 className="text-lg font-semibold text-foreground">Holiday calendars</h3>
+          </div>
+          <h4 className="text-sm font-medium text-foreground mb-2">Official Calendars</h4>
           <LocationSelector
             locations={EUROPEAN_LOCATIONS}
             selectedIds={selectedLocationIds}

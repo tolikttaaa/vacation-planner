@@ -7,15 +7,17 @@ interface VacationModeToggleProps {
   isVacationMode: boolean
   onToggle: () => void
   vacationCount: number
+  disabled?: boolean
 }
 
-export function VacationModeToggle({ isVacationMode, onToggle, vacationCount }: VacationModeToggleProps) {
+export function VacationModeToggle({ isVacationMode, onToggle, vacationCount, disabled = false }: VacationModeToggleProps) {
   // Toggle between planning mode and normal browsing.
   return (
     <Button
       variant={isVacationMode ? "default" : "outline"}
       size="lg"
       onClick={onToggle}
+      disabled={disabled}
       className="gap-2 px-6"
       title={isVacationMode ? "Exit vacation selection mode" : "Enter vacation selection mode"}
     >

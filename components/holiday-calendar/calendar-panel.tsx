@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { Calendar } from "lucide-react"
-import type { CustomCalendar, DayInfo, LocationConfig } from "@/lib/types"
+import type { CustomCalendar, DayInfo, LocationConfig, PersonProfile } from "@/lib/types"
 import type { VacationSummary } from "@/lib/vacation-manager"
 import { PANEL_STYLES } from "./constants"
 import { CalendarGrid } from "./calendar-grid"
@@ -11,21 +11,20 @@ import { DayDetailPanel } from "./day-detail-panel"
 import { Legend } from "./legend"
 import { VacationToolbar } from "./vacation-toolbar"
 import { PngExportButton } from "./png-export-button"
-import { VacationModeToggle } from "./vacation-mode-toggle"
-import { VacationResultsPanel } from "./vacation-results-panel"
 
 interface CalendarPanelProps {
   year: number
   yearData: Map<string, DayInfo>
   isLoading: boolean
-  selectedLocationIds: string[]
+  hasCalendar: boolean
   customCalendars: CustomCalendar[]
   selectedLocations: LocationConfig[]
   vacationSummary: VacationSummary | null
   isVacationMode: boolean
-  onVacationModeToggle: () => void
+  canPlanVacation: boolean
   vacationCount: number
   vacationDates: Set<string>
+  vacationPeopleByDate: Map<string, PersonProfile[]>
   rangeStart: string | null
   onRangeStartChange: (dateISO: string | null) => void
   onVacationToggle: (dateISO: string) => void
@@ -41,14 +40,15 @@ export function CalendarPanel({
   year,
   yearData,
   isLoading,
-  selectedLocationIds,
+  hasCalendar,
   customCalendars,
   selectedLocations,
   vacationSummary,
   isVacationMode,
-  onVacationModeToggle,
+  canPlanVacation,
   vacationCount,
   vacationDates,
+  vacationPeopleByDate,
   rangeStart,
   onRangeStartChange,
   onVacationToggle,
@@ -59,6 +59,7 @@ export function CalendarPanel({
   getGridElement,
 }: CalendarPanelProps) {
   const [selectedDay, setSelectedDay] = useState<DayInfo | null>(null)
+  const restingPeople = selectedDay?.dateISO ? vacationPeopleByDate.get(selectedDay.dateISO) ?? [] : []
 
   return (
     <div className={`${PANEL_STYLES.container} p-4 md:p-6`}>
@@ -72,32 +73,13 @@ export function CalendarPanel({
           <h2 className="text-lg font-semibold text-foreground">Calendar {year}</h2>
         </div>
         <div className="flex items-center gap-3">
-          <VacationModeToggle
-            isVacationMode={isVacationMode}
-            onToggle={onVacationModeToggle}
-            vacationCount={vacationCount}
-          />
-          <PngExportButton
-            getGridElement={getGridElement}
-            year={year}
-            disabled={selectedLocationIds.length === 0 && customCalendars.length === 0}
-            size="lg"
-          />
+          <PngExportButton getGridElement={getGridElement} year={year} disabled={!hasCalendar} size="lg" />
         </div>
       </div>
 
       {/* Export wrapper ensures legend is included in PNG output. */}
       <div ref={exportRef} className="space-y-4 w-full">
         <Legend selectedLocations={selectedLocations} customCalendars={customCalendars} />
-
-        {isVacationMode && (
-          <VacationToolbar
-            vacationCount={vacationDates.size}
-            onClearAll={onClearAllVacation}
-            isRangeSelecting={!!rangeStart}
-            rangeStart={rangeStart}
-          />
-        )}
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
@@ -106,10 +88,10 @@ export function CalendarPanel({
               <span className="text-muted-foreground">Loading holiday data...</span>
             </div>
           </div>
-        ) : selectedLocationIds.length === 0 && customCalendars.length === 0 ? (
+        ) : !hasCalendar ? (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <Calendar className="w-12 h-12 mb-3 text-muted" />
-            <p>Select at least one location or enable a custom calendar to view</p>
+            <p>Select a calendar for the active person to view</p>
           </div>
         ) : (
           <div className="overflow-x-auto pb-2" data-calendar-scroll>
@@ -120,6 +102,7 @@ export function CalendarPanel({
               customCalendars={customCalendars}
               isVacationMode={isVacationMode}
               vacationDates={vacationDates}
+              vacationPeopleByDate={vacationPeopleByDate}
               onVacationToggle={onVacationToggle}
               onVacationRangeSelect={onVacationRangeSelect}
               rangeStart={rangeStart}
@@ -131,11 +114,19 @@ export function CalendarPanel({
           </div>
         )}
 
-        {!isVacationMode && (
-          <DayDetailPanel dayInfo={selectedDay} onClose={() => setSelectedDay(null)} />
+        {canPlanVacation && isVacationMode && (
+          <VacationToolbar
+            vacationCount={vacationDates.size}
+            onClearAll={onClearAllVacation}
+            isRangeSelecting={!!rangeStart}
+            rangeStart={rangeStart}
+          />
         )}
 
-        {vacationSummary && <VacationResultsPanel summary={vacationSummary} />}
+        {!isVacationMode && (
+          <DayDetailPanel dayInfo={selectedDay} onClose={() => setSelectedDay(null)} restingPeople={restingPeople} />
+        )}
+
       </div>
     </div>
   )

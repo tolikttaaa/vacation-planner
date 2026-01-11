@@ -28,16 +28,20 @@ This is a personal pet project built by me with AI agents (no manual coding). It
 - **Full validation** with helpful error messages
 
 ### Vacation Planning Mode
+- **Person-based planning** with one calendar assigned per person
+- **Multiple people support** with independent vacation plans and summaries
+- **Overview mode** to browse holidays without selecting a person
 - **Click or drag to select** vacation days
 - **Shift+click for range selection** with live preview
-- **Per-region breakdown** showing required leave days vs. excluded days (weekends/holidays)
+- **Per-person breakdown** showing required leave days vs. excluded days (weekends/holidays)
 - **Interval grouping** displaying vacation periods as date ranges
-- **Export to CSV** for use in other applications
+- **Shared vacation highlights** across the grid with per-day people listings in the detail panel
 
 ### User Experience
 - **Responsive design** with horizontal grid scrolling while panels and detail sections remain fixed
 - **Persistent state** via localStorage (selected locations, year, vacations, custom calendars)
 - **Minimalist vacation-themed background** with line-art illustrations and themed panel styling
+- **Legend enhancements** for vacation states and multi-holiday markers
 
 ## Getting Started
 
@@ -47,6 +51,14 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+## How to Use
+
+1. Choose holiday calendars in the Holiday calendars panel to browse holidays in overview mode.
+2. Add a person in the Vacation Planning panel and assign a calendar.
+3. Click Plan Vacation on a person to enter their planning mode.
+4. Select days on the calendar (click to toggle, shift+click for ranges, or drag to paint).
+5. Review the required vs. excluded days in the person panel, and use the day details panel for holiday context.
 
 ## Tech Stack
 
