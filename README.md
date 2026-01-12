@@ -4,7 +4,7 @@
 
 A comprehensive vacation and holiday planning application built with Next.js that helps you visualize public holidays across multiple European countries and regions, plan your vacations, and calculate required leave days.
 
-This is a personal pet project built by me with AI agents (no manual coding). It will evolve incrementally as I have free time and agent tokens.
+This is a personal pet project built by with AI agents (no manual coding).
 
 ## Features
 
