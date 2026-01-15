@@ -6,6 +6,8 @@ A comprehensive vacation and holiday planning application built with Next.js tha
 
 This is a personal pet project built by with AI agents (no manual coding).
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/ttaaa)
+
 ## Features
 
 ### Multi-Location Holiday Calendar
@@ -50,7 +52,3 @@ This is a personal pet project built by with AI agents (no manual coding).
 ## Stories
 
 - [Logo creation story](docs/LOGO.md)
-
-## Buy Me a Coffee
-
-- Support the project: https://buymeacoffee.com/ttaaa
