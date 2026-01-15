@@ -6,6 +6,8 @@ A comprehensive vacation and holiday planning application built with Next.js tha
 
 This is a personal pet project built by with AI agents (no manual coding).
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/ttaaa)
+
 ## Features
 
 ### Multi-Location Holiday Calendar
@@ -43,31 +45,10 @@ This is a personal pet project built by with AI agents (no manual coding).
 - **Minimalist vacation-themed background** with line-art illustrations and themed panel styling
 - **Legend enhancements** for vacation states and multi-holiday markers
 
-## Getting Started
+## Implementation Guide
 
-```bash
-npm install
-npm run dev
-```
+- [Implementation details and usage](IMPLEMENTATION.md)
 
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+## Stories
 
-## How to Use
-
-1. Choose holiday calendars in the Holiday calendars panel to browse holidays in overview mode.
-2. Add a person in the Vacation Planning panel and assign a calendar.
-3. Click Plan Vacation on a person to enter their planning mode.
-4. Select days on the calendar (click to toggle, shift+click for ranges, or drag to paint).
-5. Review the required vs. excluded days in the person panel, and use the day details panel for holiday context.
-
-## Tech Stack
-
-- **Framework**: Next.js 14 with App Router
-- **Styling**: Tailwind CSS with CSS variables for theming
-- **UI Components**: shadcn/ui
-- **Data Source**: Nager.Date Public Holiday API
-- **State**: React hooks with localStorage persistence
-
-## License
-
-MIT
+- [Logo creation story](docs/LOGO.md)

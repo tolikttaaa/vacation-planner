@@ -2,6 +2,37 @@
 
 This document describes the technical architecture and implementation decisions for the Vacation Planner application.
 
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+## How to Use
+
+1. Choose holiday calendars in the Holiday calendars panel to browse holidays in overview mode.
+2. Add a person in the Vacation Planning panel and assign a calendar.
+3. Click Plan Vacation on a person to enter their planning mode.
+4. Select days on the calendar (click to toggle, shift+click for ranges, or drag to paint).
+5. Review the required vs. excluded days in the person panel, and use the day details panel for holiday context.
+
+## Tech Stack
+
+- **Framework**: Next.js 14 with App Router
+- **Styling**: Tailwind CSS with CSS variables for theming
+- **UI Components**: shadcn/ui
+- **Data Source**: Nager.Date Public Holiday API
+- **State**: React hooks with localStorage persistence
+
+## Development Notes
+
+- **LocalStorage reset**: Clear `localStorage` if you need a fresh state or change persisted schema.
+- **Holiday data caching**: Year/location data is cached in memory to reduce API calls during navigation.
+- **PNG export**: The export button uses the current viewport layout, so test at target sizes before sharing.
+
 ## Architecture Overview
 
 ```
