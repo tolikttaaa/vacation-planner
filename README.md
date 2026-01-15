@@ -43,35 +43,14 @@ This is a personal pet project built by with AI agents (no manual coding).
 - **Minimalist vacation-themed background** with line-art illustrations and themed panel styling
 - **Legend enhancements** for vacation states and multi-holiday markers
 
-## Getting Started
+## Implementation Guide
 
-```bash
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to view the application.
-
-## How to Use
-
-1. Choose holiday calendars in the Holiday calendars panel to browse holidays in overview mode.
-2. Add a person in the Vacation Planning panel and assign a calendar.
-3. Click Plan Vacation on a person to enter their planning mode.
-4. Select days on the calendar (click to toggle, shift+click for ranges, or drag to paint).
-5. Review the required vs. excluded days in the person panel, and use the day details panel for holiday context.
-
-## Tech Stack
-
-- **Framework**: Next.js 14 with App Router
-- **Styling**: Tailwind CSS with CSS variables for theming
-- **UI Components**: shadcn/ui
-- **Data Source**: Nager.Date Public Holiday API
-- **State**: React hooks with localStorage persistence
+- [Implementation details and usage](IMPLEMENTATION.md)
 
 ## Stories
 
 - [Logo creation story](docs/LOGO.md)
 
-## License
+## Buy Me a Coffee
 
-MIT
+- Support the project: https://buymeacoffee.com/ttaaa
