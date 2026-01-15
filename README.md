@@ -68,6 +68,10 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 - **Data Source**: Nager.Date Public Holiday API
 - **State**: React hooks with localStorage persistence
 
+## Stories
+
+- [Logo creation story](docs/LOGO.md)
+
 ## License
 
 MIT
